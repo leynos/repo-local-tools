@@ -4,7 +4,7 @@ This ExecPlan (execution plan) is a living document. The sections `Constraints`,
  `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
 and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: DRAFT
+Status: IN PROGRESS
 
 ## Purpose / big picture
 
@@ -136,14 +136,27 @@ Implementation may proceed within these limits after plan approval:
 - [x] (2026-05-05T07:36:21Z) Confirmed `grepai` is unavailable because its
   Qdrant backend on `127.0.0.1:6334` is not running; this plan uses direct file
   inspection as the fallback.
-- [ ] Await explicit user approval or requested revisions before implementing.
-- [ ] Add Cyclopts dependency and console script metadata.
-- [ ] Add `pytest` unit tests and `pytest-bdd` behavioural tests describing
-  CLI registration, source registry loading, installation, update, commit,
-  archive handling, and `.gitignore` updates.
-- [ ] Implement the CLI and installer/update/commit services.
-- [ ] Update user documentation and design notes.
-- [ ] Run sequential gates and commit the approved implementation.
+- [x] (2026-05-05T08:10:40Z) Received approval to implement the plan and to
+  commit formatter changes.
+- [x] (2026-05-05T08:10:40Z) Added Cyclopts dependency and console script
+  metadata.
+- [x] (2026-05-05T08:10:40Z) Added `pytest` unit tests and `pytest-bdd`
+  behavioural tests describing CLI registration, source registry loading,
+  installation, update, commit, archive handling, and `.gitignore` updates.
+- [x] (2026-05-05T08:10:40Z) Ran the red test gate. `make test` failed as
+  expected because `repo_local_tools.agent_tools` and `repo_local_tools.cli`
+  did not exist. Log: `/tmp/test-repo-local-tools-tool-implementation-red.out`.
+- [x] (2026-05-05T08:10:40Z) Implemented the CLI and installer/update/commit
+  services.
+- [x] (2026-05-05T08:10:40Z) Updated `docs/users-guide.md` and added
+  `docs/agent-tool-definition-format.md`.
+- [x] (2026-05-05T08:10:40Z) Ran the implementation test gate. `make test`
+  passed with 15 tests, including the `pytest-bdd` behavioural scenarios. Log:
+  `/tmp/test-repo-local-tools-tool-implementation-implementation.out`.
+- [x] (2026-05-05T08:20:43Z) Ran sequential gates successfully:
+  `make fmt`, `make markdownlint`, `make nixie`, `make check-fmt`, `make lint`,
+  `make typecheck`, `make test`, and `make all`.
+- [ ] Commit the approved implementation.
 
 ## Surprises & discoveries
 
@@ -185,12 +198,32 @@ Implementation may proceed within these limits after plan approval:
   unrelated changes would violate user work isolation. Date/Author:
   2026-05-05T07:36:21Z / Codex
 
+- Decision: Store the repo-local managed-tool manifest as JSON at
+  `.repo-local-tools/managed-tools.json`. Rationale: MCP source definitions use
+  TOML as planned, but the manifest must be written by the tool. Python has a
+  standard JSON writer, avoiding a second runtime dependency or a hand-rolled
+  TOML serializer. Date/Author: 2026-05-05T08:10:40Z / Codex
+
+- Decision: Render MCP definitions into `.mcp.json`, `.codex/mcp.json`,
+  `.factory-droid/mcp.json`, and `.cursor/mcp.json` using the same `mcpServers`
+  JSON shape. Rationale: The shared shape provides one preferred definition
+  form across Claude, Codex, Factory Droid, and Cursor while keeping client
+  adapters small and replaceable if a confirmed client-specific schema is later
+  needed. Date/Author: 2026-05-05T08:10:40Z / Codex
+
+- Decision: Install skills into `.claude/skills/<name>`,
+  `.codex/skills/<name>`, `.factory-droid/skills/<name>`, and
+  `.cursor/skills/<name>`. Rationale: This gives every requested client a
+  deterministic repo-local target while preserving the original skill directory
+  contents exactly. Date/Author: 2026-05-05T08:10:40Z / Codex
+
 ## Outcomes & retrospective
 
-This draft has not been implemented. The current outcome is a proposed,
-self-contained plan for review. After approval, this section must be updated at
-each major milestone with what shipped, which commands were validated, which
-files changed, and whether any scope remained incomplete.
+Implementation is in progress. The current code adds the Cyclopts command
+surface, MCP and skill install/update/commit services, unit tests, behavioural
+tests, and user documentation. The implementation test gate has passed. The
+individual formatting, lint, typechecking, Markdown validation, test, and
+aggregate gates have passed. The remaining work is to commit the implementation.
 
 ## Context and orientation
 

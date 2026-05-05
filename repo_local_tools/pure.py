@@ -1,3 +1,5 @@
+"""Pure-Python fallback helpers for repo-local-tools."""
+
 from __future__ import annotations
 
 
