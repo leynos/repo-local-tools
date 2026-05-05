@@ -100,13 +100,11 @@ def main(
     # Required parameters
     bin_name: Annotated[str, Parameter(required=True)],
     version: Annotated[str, Parameter(required=True)],
-
     # Optional scalars
     package_name: Optional[str] = None,
     target: Optional[str] = None,
     outdir: Optional[Path] = None,
     dry_run: bool = False,
-
     # Lists (whitespace/newline separated by default)
     formats: list[str] | None = None,
     man_paths: Annotated[
