@@ -58,6 +58,24 @@ def skill_registry_directory(context: ScenarioContext, name: str) -> None:
     write_skill(context.xdg_data_home / "repo-local-tools" / "skills" / name, "initial")
 
 
+@given(parsers.parse('a local skill source named "{name}"'))
+def local_skill_source(context: ScenarioContext, name: str) -> None:
+    write_skill(context.repository / "skills" / name, "local")
+
+
+@given(parsers.parse('a local MCP JSON configuration for "{name}"'))
+def local_mcp_json_configuration(context: ScenarioContext, name: str) -> None:
+    (context.repository / "mcp.json").write_text(
+        json.dumps(
+            {
+                "mcpServers": {
+                    name: {"command": "python", "args": ["-m", "example"]},
+                },
+            },
+        ),
+    )
+
+
 @given(parsers.parse('an installed MCP server named "{name}"'))
 def installed_mcp_server(context: ScenarioContext, name: str) -> None:
     mcp_registry_definition(context, name)
@@ -181,6 +199,28 @@ def repository_has_updated_skill(context: ScenarioContext, name: str) -> None:
         f"expected updated skill file {skill_path} to contain 'updated\\n', "
         f"found {content!r}"
     )
+
+
+@then(parsers.parse('the shared registry has skill "{name}"'))
+def shared_registry_has_skill(context: ScenarioContext, name: str) -> None:
+    skill_path = (
+        context.xdg_data_home / "repo-local-tools" / "skills" / name / "SKILL.md"
+    )
+    content = skill_path.read_text()
+    assert content == "local\n", (
+        f"expected shared skill {name!r} at {skill_path} to contain 'local\\n', "
+        f"found {content!r}"
+    )
+
+
+@then(parsers.parse('the shared registry has MCP server "{name}"'))
+def shared_registry_has_mcp_server(context: ScenarioContext, name: str) -> None:
+    definition_path = (
+        context.xdg_data_home / "repo-local-tools" / "mcp-servers" / f"{name}.toml"
+    )
+    content = definition_path.read_text()
+    assert f'name = "{name}"' in content
+    assert 'command = "python"' in content
 
 
 @then(parsers.parse('git contains a commit with subject "{subject}"'))

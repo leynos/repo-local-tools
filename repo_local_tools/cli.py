@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import typing as typ
+from pathlib import Path
 
 import cyclopts
 
@@ -15,6 +16,7 @@ from repo_local_tools.agent_tools.install import (
     update_mcps,
     update_skills,
 )
+from repo_local_tools.agent_tools.load import LoadResult, load_path
 from repo_local_tools.agent_tools.paths import current_repository
 
 if typ.TYPE_CHECKING:
@@ -34,6 +36,15 @@ OptionalToolName = typ.Annotated[
     str | None,
     cyclopts.Parameter(
         help="Optional managed item name. Omit it to update every managed item.",
+    ),
+]
+OptionalLoadPath = typ.Annotated[
+    str | None,
+    cyclopts.Parameter(
+        help=(
+            "Optional path to a SKILL.md file, .skill archive, MCP JSON file, "
+            "or directory. Omit it to scan the current directory."
+        ),
     ),
 ]
 
@@ -78,6 +89,20 @@ skill_app = app.command(
         ),
     ),
 )
+
+
+@app.command(name="load")
+def load(source: OptionalLoadPath = None) -> None:
+    """Load local skills and MCP server JSON into the shared registry.
+
+    Without an argument, the current directory is scanned for `SKILL.md`,
+    `mcp.json`, `mcpServers.json`, `.skill` bundles, and `skill` or `skills`
+    subdirectories. With an argument, the path is loaded directly when it is a
+    supported file, or scanned with the same directory rules otherwise.
+    """
+    _run_or_exit(
+        lambda: _print_load_results(load_path(_load_source(source), Path.cwd(), None))
+    )
 
 
 @mcp_app.command(name="install")
@@ -159,6 +184,17 @@ def _run_or_exit(action: cabc.Callable[[], object]) -> None:
     except AgentToolsError as error:
         print(str(error), file=sys.stderr)
         raise SystemExit(1) from error
+
+
+def _load_source(source: str | None) -> Path | None:
+    if source is None:
+        return None
+    return Path(source)
+
+
+def _print_load_results(results: list[LoadResult]) -> None:
+    for result in results:
+        print(f"Loaded {result.kind} {result.name} to {result.path}")
 
 
 if __name__ == "__main__":

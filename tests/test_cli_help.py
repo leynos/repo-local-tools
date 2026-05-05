@@ -12,8 +12,19 @@ def test_top_level_help_explains_registry_and_command_groups() -> None:
 
     assert result.returncode == 0
     assert "$XDG_DATA_HOME/repo-local-tools" in result.stdout
+    assert "load" in result.stdout
     assert "mcp" in result.stdout
     assert "skill" in result.stdout
+
+
+def test_load_help_explains_supported_sources() -> None:
+    result = run_help("load", "--help")
+
+    assert result.returncode == 0
+    assert "SKILL.md" in result.stdout
+    assert ".skill" in result.stdout
+    assert "mcp.json" in result.stdout
+    assert "current directory" in result.stdout
 
 
 def test_mcp_help_explains_supported_clients_and_registry_path() -> None:

@@ -13,6 +13,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-bdd",
+    "syrupy",
     "ruff",
     "pyright",
     "pytest-timeout",

@@ -33,6 +33,26 @@ Optional fields:
 - `args`: A list of string arguments passed to `command`.
 - `env`: A TOML table of string environment variables.
 
+`repo-local-tools load` can create these TOML files from an MCP JSON
+configuration file named `mcp.json` or `mcpServers.json`. The JSON input must
+use a top-level `mcpServers` object:
+
+```json
+{
+  "mcpServers": {
+    "echo": {
+      "command": "python",
+      "args": ["-m", "example"],
+      "env": {
+        "MODE": "test"
+      }
+    }
+  }
+}
+```
+
+Each server under `mcpServers` is loaded as a separate shared TOML definition.
+
 During installation, the definition is rendered into `.mcp.json`,
 `.codex/mcp.json`, `.factory-droid/mcp.json`, and `.cursor/mcp.json` using the
 same `mcpServers` object shape:

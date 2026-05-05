@@ -32,21 +32,28 @@ uv sync --group dev
 
 ### Hello world
 
-Create a tiny shared MCP definition:
+Create a tiny MCP configuration in a project:
 
 ```bash
-mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/repo-local-tools/mcp-servers"
-cat > "${XDG_DATA_HOME:-$HOME/.local/share}/repo-local-tools/mcp-servers/hello.toml" <<'EOF_MCP'
-name = "hello"
-command = "python"
-args = ["-m", "http.server", "9000"]
+mkdir -p /path/to/project
+cat > /path/to/project/mcp.json <<'EOF_MCP'
+{
+  "mcpServers": {
+    "hello": {
+      "command": "python",
+      "args": ["-m", "http.server", "9000"]
+    }
+  }
+}
 EOF_MCP
 ```
 
-Install it into another Git repository:
+Load it into the shared registry, then install it into the repository-local
+agent client files:
 
 ```bash
 cd /path/to/project
+uv run --project /path/to/repo-local-tools repo-local-tools load
 uv run --project /path/to/repo-local-tools repo-local-tools mcp install hello
 ```
 
@@ -61,6 +68,8 @@ ______________________________________________________________________
 - Install, update, and commit shared MCP server definitions.
 - Install, update, and commit shared skill directories.
 - Install absolute Anthropic `.skill` archives safely.
+- Load local `SKILL.md`, `.skill`, `mcp.json`, and `mcpServers.json` sources
+  into the shared registry.
 - Render repo-local files for Claude, Codex, Factory Droid, and Cursor.
 - Add generated client paths to `.gitignore` automatically.
 - Refuse scoped commits when unrelated repository changes are present.

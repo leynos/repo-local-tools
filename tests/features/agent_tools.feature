@@ -30,6 +30,15 @@ Feature: Manage local agent tools
     And the repository has updated MCP configuration for "echo"
     And the repository has updated skill "reviewer"
 
+  Scenario: Load all local tool sources into the shared registry
+    Given a git repository workspace
+    And a local skill source named "reviewer"
+    And a local MCP JSON configuration for "echo"
+    When I run "repo-local-tools load"
+    Then the command succeeds
+    And the shared registry has skill "reviewer"
+    And the shared registry has MCP server "echo"
+
   Scenario: Commit a managed MCP server
     Given a git repository workspace
     And an installed MCP server named "echo"

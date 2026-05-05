@@ -33,6 +33,7 @@ current working directory as the repository that receives generated files.
 
 ```bash
 repo-local-tools --help
+repo-local-tools load [path]
 repo-local-tools mcp --help
 repo-local-tools skill --help
 ```
@@ -48,10 +49,11 @@ repo-local-tools skill update [name]
 repo-local-tools skill commit <name>
 ```
 
-The `install` commands render files into the current repository. The `update`
-commands refresh installed items from their original source definitions. The
-`commit` commands create a Git commit for one managed item and refuse to
-proceed when unrelated changes are present.
+The `load` command copies local skill sources and MCP JSON configurations into
+the shared XDG registry. The `install` commands render files into the current
+repository. The `update` commands refresh installed items from their original
+source definitions. The `commit` commands create a Git commit for one managed
+item and refuse to proceed when unrelated changes are present.
 
 ## Source registry layout
 
@@ -77,6 +79,78 @@ $XDG_DATA_HOME/repo-local-tools/skills/<name>/
 Anthropic `.skill` archives may also be installed directly. Archive paths must
 be absolute and must point to a zip file containing exactly one top-level skill
 directory.
+
+`repo-local-tools load` writes to the same shared source registry. It is useful
+when a project already contains a `SKILL.md`, `.skill` bundle, `mcp.json`, or
+`mcpServers.json` file and the maintainer wants to make those tools available
+for later `mcp install` or `skill install` commands.
+
+## Loading local sources
+
+Run `load` without a path to scan the current directory:
+
+```bash
+repo-local-tools load
+```
+
+The omitted-path scan loads every supported source it finds:
+
+- If `SKILL.md` exists in the current directory, the current directory is
+  loaded as a skill. If the file has a frontmatter `name`, that name is used;
+  otherwise, the current directory name is used. The fallback names `skill` and
+  `src` are rejected because they are too ambiguous.
+- If `mcp.json` or `mcpServers.json` exists, each server under its top-level
+  `mcpServers` object is loaded into the shared MCP registry.
+- Each `.skill` bundle in the current directory is loaded individually.
+- If a `skill` or `skills` subdirectory exists, each direct subdirectory under
+  it is loaded as an individual skill directory.
+
+Run `load` with a path to load one source or scan another directory:
+
+```bash
+repo-local-tools load path/to/SKILL.md
+repo-local-tools load path/to/reviewer.skill
+repo-local-tools load path/to/mcp.json
+repo-local-tools load path/to/project
+```
+
+Path handling follows the same rules:
+
+- `SKILL.md` loads its enclosing directory as one skill.
+- `.skill` loads that archive as one skill.
+- `mcp.json` or `mcpServers.json` loads every server from its `mcpServers`
+  object.
+- Any other directory is scanned as though `load` had been run from that
+  directory.
+
+MCP JSON input follows the interoperable MCP configuration shape used by
+FastMCP and many MCP clients:
+
+```json
+{
+  "mcpServers": {
+    "echo": {
+      "command": "python",
+      "args": ["-m", "example"],
+      "env": {
+        "MODE": "test"
+      }
+    }
+  }
+}
+```
+
+Each loaded server is converted into a shared TOML definition under:
+
+```plaintext
+$XDG_DATA_HOME/repo-local-tools/mcp-servers/<name>.toml
+```
+
+Each loaded skill is copied under:
+
+```plaintext
+$XDG_DATA_HOME/repo-local-tools/skills/<name>/
+```
 
 ## MCP server definition syntax
 
@@ -295,21 +369,25 @@ commit a specific MCP server or skill intentionally.
 
 ## Example workflow
 
-A maintainer can define a shared MCP server once:
+A maintainer can load a project-local MCP JSON file into the shared registry:
 
 ```bash
-mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/repo-local-tools/mcp-servers"
-cat > "${XDG_DATA_HOME:-$HOME/.local/share}/repo-local-tools/mcp-servers/hello.toml" <<'EOF_MCP'
-name = "hello"
-command = "python"
-args = ["-m", "http.server", "9000"]
+cat > mcp.json <<'EOF_MCP'
+{
+  "mcpServers": {
+    "hello": {
+      "command": "python",
+      "args": ["-m", "http.server", "9000"]
+    }
+  }
+}
 EOF_MCP
+repo-local-tools load
 ```
 
 Then the maintainer can install it into a project:
 
 ```bash
-cd /path/to/project
 repo-local-tools mcp install hello
 ```
 
