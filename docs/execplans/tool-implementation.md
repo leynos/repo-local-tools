@@ -4,7 +4,7 @@ This ExecPlan (execution plan) is a living document. The sections `Constraints`,
  `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
 and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Purpose / big picture
 
@@ -156,7 +156,8 @@ Implementation may proceed within these limits after plan approval:
 - [x] (2026-05-05T08:20:43Z) Ran sequential gates successfully:
   `make fmt`, `make markdownlint`, `make nixie`, `make check-fmt`, `make lint`,
   `make typecheck`, `make test`, and `make all`.
-- [ ] Commit the approved implementation.
+- [x] (2026-05-05T08:22:10Z) Committed the approved implementation as
+  `9e2aec5`.
 
 ## Surprises & discoveries
 
@@ -219,11 +220,14 @@ Implementation may proceed within these limits after plan approval:
 
 ## Outcomes & retrospective
 
-Implementation is in progress. The current code adds the Cyclopts command
+The implementation is complete. Commit `9e2aec5` adds the Cyclopts command
 surface, MCP and skill install/update/commit services, unit tests, behavioural
-tests, and user documentation. The implementation test gate has passed. The
-individual formatting, lint, typechecking, Markdown validation, test, and
-aggregate gates have passed. The remaining work is to commit the implementation.
+tests, and user documentation. The final gates passed: `make fmt`,
+`make markdownlint`, `make nixie`, `make check-fmt`, `make lint`,
+`make typecheck`, `make test`, and `make all`. The implementation uses TOML
+source definitions for MCP servers, JSON for the writable repo-local manifest,
+and deterministic repo-local client paths for Claude, Codex, Factory Droid, and
+Cursor.
 
 ## Context and orientation
 
@@ -591,4 +595,7 @@ the result type in `repo_local_tools/agent_tools/definitions.py` or a dedicated
 Initial draft created on 2026-05-05 for branch `tool-implementation`. The plan
 captures the requested Cyclopts entrypoint, MCP and skill install/update/commit
 behaviour, `.gitignore` handling, validation strategy, and implementation
-approval gate. Implementation remains blocked pending explicit user approval.
+approval gate.
+
+Revision on 2026-05-05T08:22:10Z records completion after implementation commit
+`9e2aec5`. The remaining state is committed code and passing gates.
