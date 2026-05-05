@@ -46,3 +46,10 @@ Feature: Manage local agent tools
     When I run "repo-local-tools mcp commit echo"
     Then the command succeeds
     And git contains a commit with subject "Install MCP server echo"
+
+  Scenario: Commit a managed skill
+    Given a git repository workspace
+    And an installed skill named "echo"
+    When I run "repo-local-tools skill commit echo"
+    Then the command succeeds
+    And git contains a commit with subject "Install skill echo"

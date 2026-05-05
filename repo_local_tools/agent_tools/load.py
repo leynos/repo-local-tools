@@ -21,6 +21,7 @@ if typ.TYPE_CHECKING:
 MCP_JSON_FILENAMES = frozenset({"mcp.json", "mcpServers.json"})
 INVALID_FALLBACK_SKILL_NAMES = frozenset({"skill", "src"})
 SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+MCP_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 class LoadError(AgentToolsError):
@@ -179,23 +180,38 @@ def _load_mcp_json(source: Path, xdg_data_home: Path | None) -> list[LoadResult]
 
 
 def _mcp_definition(source: Path, name: object, value: object) -> McpDefinition:
-    if not isinstance(name, str) or not name:
-        msg = f"{source} contains an MCP server with an invalid name"
-        raise LoadError(msg)
+    safe_name = _safe_mcp_name(source, name)
     if not isinstance(value, dict):
-        msg = f"{source} MCP server {name!r} must be an object"
+        msg = f"{source} MCP server {safe_name!r} must be an object"
         raise LoadError(msg)
     parsed = typ.cast("dict[object, object]", value)
-    command = _required_string(parsed, "command", source, name)
-    args = _optional_string_tuple(parsed, "args", source, name)
-    env = _optional_string_mapping(parsed, "env", source, name)
+    command = _required_string(parsed, "command", source, safe_name)
+    args = _optional_string_tuple(parsed, "args", source, safe_name)
+    env = _optional_string_mapping(parsed, "env", source, safe_name)
     return McpDefinition(
-        name=name,
+        name=safe_name,
         command=command,
         args=args,
         env=env,
         source_path=source,
     )
+
+
+def _safe_mcp_name(source: Path, name: object) -> str:
+    if not isinstance(name, str) or not name:
+        msg = f"{source} contains an MCP server with an invalid name"
+        raise LoadError(msg)
+    unsafe_checks = (
+        Path(name).is_absolute(),
+        "/" in name,
+        "\\" in name,
+        ".." in name,
+        MCP_NAME_PATTERN.fullmatch(name) is None,
+    )
+    if any(unsafe_checks):
+        msg = f"{source} contains unsafe MCP server name: {name!r}"
+        raise LoadError(msg)
+    return name
 
 
 def _required_string(
@@ -250,10 +266,11 @@ def _write_mcp_definition(
     definition: McpDefinition,
     xdg_data_home: Path | None,
 ) -> LoadResult:
-    destination = data_root(xdg_data_home) / "mcp-servers" / f"{definition.name}.toml"
+    name = _safe_mcp_name(definition.source_path, definition.name)
+    destination = data_root(xdg_data_home) / "mcp-servers" / f"{name}.toml"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(_mcp_definition_toml(definition))
-    return LoadResult(kind="mcp", name=definition.name, path=destination)
+    return LoadResult(kind="mcp", name=name, path=destination)
 
 
 def _mcp_definition_toml(definition: McpDefinition) -> str:

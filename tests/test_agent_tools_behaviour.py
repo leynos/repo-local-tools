@@ -227,8 +227,12 @@ def shared_registry_has_mcp_server(context: ScenarioContext, name: str) -> None:
         context.xdg_data_home / "repo-local-tools" / "mcp-servers" / f"{name}.toml"
     )
     content = definition_path.read_text()
-    assert f'name = "{name}"' in content
-    assert 'command = "python"' in content
+    assert f'name = "{name}"' in content, (
+        f"expected {definition_path} to define MCP name {name!r}; content: {content!r}"
+    )
+    assert 'command = "python"' in content, (
+        f"expected {definition_path} to define command 'python'; content: {content!r}"
+    )
 
 
 @then(parsers.parse('git contains a commit with subject "{subject}"'))

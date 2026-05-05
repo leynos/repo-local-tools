@@ -25,7 +25,7 @@ class ToolRecord:
     ignore_patterns: tuple[str, ...]
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Manifest:
     """Repo-local managed tool manifest."""
 

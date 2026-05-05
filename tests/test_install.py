@@ -1,3 +1,9 @@
+"""Install and update behaviour tests for managed MCP servers and skills.
+
+These tests cover `install_mcp`, `install_skill`, `update_mcps`, and
+`update_skills`. Run with: `pytest tests/test_install.py`.
+"""
+
 from __future__ import annotations
 
 import json
@@ -95,10 +101,19 @@ def test_install_skill_from_archive_path_updates_manifest_and_clients(
         ".factory-droid/skills/reviewer/SKILL.md",
         ".cursor/skills/reviewer/SKILL.md",
     ]:
-        assert (repository / relative_path).read_text() == "From archive.\n"
+        skill_path = repository / relative_path
+        actual_content = skill_path.read_text()
+        assert actual_content == "From archive.\n", (
+            f"unexpected archive-installed content in {skill_path}: "
+            f"expected 'From archive.\\n', found {actual_content!r}"
+        )
 
     manifest = load_manifest(repository)
-    assert manifest.skills["reviewer"].source == str(archive_path)
+    actual_source = manifest.skills["reviewer"].source
+    assert actual_source == str(archive_path), (
+        "load_manifest(repository) returned unexpected source for skill "
+        f"'reviewer': expected {str(archive_path)!r}, found {actual_source!r}"
+    )
 
 
 def test_update_skill_archive_preserves_managed_name(tmp_path: Path) -> None:
@@ -115,13 +130,28 @@ def test_update_skill_archive_preserves_managed_name(tmp_path: Path) -> None:
 
     results = update_skills("reviewer", repository, tmp_path / "xdg")
 
-    assert [result.name for result in results] == ["reviewer"]
-    assert (
-        repository / ".claude/skills/reviewer/SKILL.md"
-    ).read_text() == "Updated archive.\n"
-    assert not (repository / ".claude/skills/renamed-upstream").exists()
+    actual_names = [result.name for result in results]
+    assert actual_names == ["reviewer"], (
+        f"unexpected updated skill result names: expected ['reviewer'], "
+        f"found {actual_names!r}"
+    )
+    updated_skill_path = repository / ".claude/skills/reviewer/SKILL.md"
+    actual_content = updated_skill_path.read_text()
+    assert actual_content == "Updated archive.\n", (
+        f"unexpected updated archive content in {updated_skill_path}: "
+        f"expected 'Updated archive.\\n', found {actual_content!r}"
+    )
+    renamed_path = repository / ".claude/skills/renamed-upstream"
+    assert not renamed_path.exists(), (
+        f"expected update to preserve managed name 'reviewer', but found "
+        f"unexpected upstream directory {renamed_path}"
+    )
     manifest = load_manifest(repository)
-    assert set(manifest.skills) == {"reviewer"}
+    actual_skill_names = set(manifest.skills)
+    assert actual_skill_names == {"reviewer"}, (
+        f"unexpected managed skill names after archive update: expected "
+        f"{{'reviewer'}}, found {actual_skill_names!r}"
+    )
 
 
 def test_install_skill_unknown_name_raises_install_error(tmp_path: Path) -> None:
@@ -154,5 +184,13 @@ def test_update_mcps_and_skills_return_install_results(tmp_path: Path) -> None:
     mcp_results = update_mcps(None, repository, xdg_data_home)
     skill_results = update_skills(None, repository, xdg_data_home)
 
-    assert {result.name for result in mcp_results} == {"echo"}
-    assert {result.name for result in skill_results} == {"reviewer"}
+    actual_mcp_names = {result.name for result in mcp_results}
+    actual_skill_names = {result.name for result in skill_results}
+    assert actual_mcp_names == {"echo"}, (
+        f"unexpected MCP update result names: expected {{'echo'}}, "
+        f"found {actual_mcp_names!r}"
+    )
+    assert actual_skill_names == {"reviewer"}, (
+        f"unexpected skill update result names: expected {{'reviewer'}}, "
+        f"found {actual_skill_names!r}"
+    )
