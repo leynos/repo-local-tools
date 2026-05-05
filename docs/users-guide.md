@@ -75,7 +75,7 @@ $XDG_DATA_HOME/repo-local-tools/skills/<name>/
 ```
 
 Anthropic `.skill` archives may also be installed directly. Archive paths must
-be absolute and must point at a zip file containing exactly one top-level skill
+be absolute and must point to a zip file containing exactly one top-level skill
 directory.
 
 ## MCP server definition syntax

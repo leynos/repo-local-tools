@@ -17,7 +17,7 @@ class DefinitionError(AgentToolsError):
     """Raised when a shared tool definition is invalid."""
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, slots=True)
 class McpDefinition:
     """A shared MCP server definition."""
 

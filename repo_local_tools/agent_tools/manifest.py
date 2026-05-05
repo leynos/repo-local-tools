@@ -36,7 +36,7 @@ class Manifest:
         """Return records for a manifest kind."""
         if kind == "mcps":
             return self.mcps
-        if kind == "skills":
+        elif kind == "skills":  # noqa: RET505
             return self.skills
         msg = f"unknown manifest kind: {kind}"
         raise ValueError(msg)

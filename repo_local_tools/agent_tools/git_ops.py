@@ -45,7 +45,7 @@ def commit_managed_tool(repository: Path, kind: str, name: str) -> None:
         check=False,
     )
     if staged.returncode == 0:
-        msg = f"no managed changes to commit for {kind[:-1]} {name}"
+        msg = f"no managed changes to commit for {singularize_kind(kind)} {name}"
         raise GitError(msg)
 
     subject = _commit_subject(kind, name, action)
@@ -60,7 +60,7 @@ def _record_for(records: dict[str, ToolRecord], kind: str, name: str) -> ToolRec
     record = records.get(name)
     if record is not None:
         return record
-    msg = f"unknown managed tool: {name}"
+    msg = f"unknown managed {singularize_kind(kind)}: {name}"
     raise GitError(msg)
 
 
@@ -103,17 +103,32 @@ def _has_tracked_owned_path(repository: Path, files: tuple[str, ...]) -> bool:
 
 
 def _commit_subject(kind: str, name: str, action: str) -> str:
-    noun = "MCP server" if kind == "mcps" else "skill"
+    noun = _tool_noun(kind)
     return f"{action} {noun} {name}"
 
 
 def _commit_body(kind: str, name: str, action: str) -> str:
     verb = "Update" if action == "Update" else "Add"
-    noun = "MCP server" if kind == "mcps" else "skill"
+    noun = _tool_noun(kind)
     return (
         f"{verb} repo-local agent client files for the {name} {noun} and "
         "record the managed file ownership metadata."
     )
+
+
+def singularize_kind(kind: str) -> str:
+    """Return a stable singular form for known manifest kinds."""
+    mapping = {
+        "indices": "index",
+        "mcps": "MCP server",
+        "metadata": "metadata",
+        "skills": "skill",
+    }
+    return mapping.get(kind, kind.rstrip("s") or kind)
+
+
+def _tool_noun(kind: str) -> str:
+    return singularize_kind(kind)
 
 
 def _run_git(repository: Path, *args: str) -> subprocess.CompletedProcess[str]:

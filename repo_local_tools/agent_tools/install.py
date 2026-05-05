@@ -75,7 +75,7 @@ def install_skill(
 ) -> InstallResult:
     """Install one skill from a registry name or absolute `.skill` archive path."""
     if source.endswith(".skill"):
-        return _install_skill_archive(Path(source), repository)
+        return _install_skill_archive(_absolute_skill_archive(source), repository)
     skill_source = data_root(xdg_data_home) / "skills" / source
     return _install_skill_directory(source, skill_source, repository, str(skill_source))
 
@@ -95,7 +95,11 @@ def update_skills(
             msg = f"unknown managed skill: {item_name}"
             raise InstallError(msg)
         if record.source.endswith(".skill"):
-            results.append(_install_skill_archive(Path(record.source), repository))
+            results.append(
+                _install_skill_archive(
+                    _absolute_skill_archive(record.source), repository, item_name
+                )
+            )
         else:
             results.append(
                 _install_skill_directory(
@@ -105,14 +109,25 @@ def update_skills(
     return results
 
 
-def _install_skill_archive(archive_path: Path, repository: Path) -> InstallResult:
+def _install_skill_archive(
+    archive_path: Path,
+    repository: Path,
+    managed_name: str | None = None,
+) -> InstallResult:
     with tempfile.TemporaryDirectory() as temporary_directory:
         extracted = extract_skill_archive(
             archive_path, Path(temporary_directory) / "skill"
         )
-        return _install_skill_directory(
-            extracted.name, extracted, repository, str(archive_path)
-        )
+        name = managed_name or extracted.name
+        return _install_skill_directory(name, extracted, repository, str(archive_path))
+
+
+def _absolute_skill_archive(source: str) -> Path:
+    archive_path = Path(source)
+    if archive_path.is_absolute():
+        return archive_path
+    msg = "Anthropic .skill archives must be absolute paths"
+    raise InstallError(msg)
 
 
 def _install_skill_directory(

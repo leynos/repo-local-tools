@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from conftest import initialize_git, write_mcp_definition
 from repo_local_tools.agent_tools.git_ops import GitError, commit_managed_tool
 from repo_local_tools.agent_tools.install import install_mcp, install_skill
 
@@ -60,7 +61,7 @@ def test_commit_managed_tool_unknown_managed_tool_raises(tmp_path: Path) -> None
     repository.mkdir()
     initialize_git(repository)
 
-    with pytest.raises(GitError, match="unknown managed tool"):
+    with pytest.raises(GitError, match="unknown managed MCP server"):
         commit_managed_tool(repository, "mcps", "does-not-exist")
 
 
@@ -82,30 +83,6 @@ def test_commit_managed_tool_commits_skill_paths(tmp_path: Path) -> None:
         text=True,
     )
     assert result.stdout.strip() == "Install skill greeter"
-
-
-def initialize_git(repository: Path) -> None:
-    subprocess.run(["git", "init"], cwd=repository, check=True, capture_output=True)
-    subprocess.run(
-        ["git", "config", "user.email", "tests@example.invalid"],
-        cwd=repository,
-        check=True,
-        capture_output=True,
-    )
-    subprocess.run(
-        ["git", "config", "user.name", "Repo Local Tools Tests"],
-        cwd=repository,
-        check=True,
-        capture_output=True,
-    )
-
-
-def write_mcp_definition(xdg_data_home: Path, name: str) -> None:
-    registry = xdg_data_home / "repo-local-tools" / "mcp-servers"
-    registry.mkdir(parents=True)
-    (registry / f"{name}.toml").write_text(
-        f'name = "{name}"\ncommand = "python"\nargs = ["-m", "example"]\n',
-    )
 
 
 def write_skill_definition(xdg_data_home: Path, name: str) -> None:
