@@ -577,7 +577,9 @@ def install_skill(source: str, repository: Path, xdg_data_home: Path | None) -> 
     """Install one skill from a registry name or absolute `.skill` archive path."""
 
 
-def update_skills(name: str | None, repository: Path, xdg_data_home: Path | None) -> None:
+def update_skills(
+    name: str | None, repository: Path, xdg_data_home: Path | None
+) -> None:
     """Update one or all installed skills."""
 
 
