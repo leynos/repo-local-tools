@@ -158,7 +158,11 @@ def _copy_skill_to_registry(
 
 
 def _load_mcp_json(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
-    parsed = json.loads(source.read_text())
+    try:
+        parsed = json.loads(source.read_text())
+    except json.JSONDecodeError as error:
+        msg = f"{source} must contain valid JSON: {error.msg}"
+        raise LoadError(msg) from error
     if not isinstance(parsed, dict):
         msg = f"{source} must contain a JSON object"
         raise LoadError(msg)

@@ -291,8 +291,8 @@ client skill location:
 ## `.skill` archive syntax
 
 A `.skill` archive is a zip file containing exactly one top-level skill
-directory. The install argument must be an absolute path ending in `.skill`.
-For example:
+directory. The argument to the install command must be an absolute path ending
+in `.skill`. For example:
 
 ```plaintext
 /tmp/reviewer.skill
@@ -363,7 +363,7 @@ that tool. `update` and `commit` commands use this manifest to decide which
 files belong to each managed item.
 
 `commit` commands use `git add -f` for ignored managed files. This keeps local
-generated directories ignored by default while still allowing maintainers to
+generated directories ignored by default, while still allowing maintainers to
 commit a specific MCP server or skill intentionally.
 
 ## Example workflow

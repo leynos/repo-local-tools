@@ -110,6 +110,14 @@ def test_load_mcp_json_rejects_non_string_environment(tmp_path: Path) -> None:
         load_path(source, tmp_path, tmp_path / "xdg")
 
 
+def test_load_mcp_json_wraps_json_decode_error(tmp_path: Path) -> None:
+    source = tmp_path / "mcp.json"
+    source.write_text('{"mcpServers": ')
+
+    with pytest.raises(LoadError, match="must contain valid JSON"):
+        load_path(source, tmp_path, tmp_path / "xdg")
+
+
 def test_load_mcp_json_file_loads_every_server(tmp_path: Path) -> None:
     source = tmp_path / "mcp.json"
     xdg_data_home = tmp_path / "xdg"

@@ -25,7 +25,8 @@ Feature: Manage local agent tools
     When I change the MCP registry definition named "echo"
     And I change the skill registry directory named "reviewer"
     And I run "repo-local-tools mcp update"
-    And I run "repo-local-tools skill update"
+    Then the command succeeds
+    When I run "repo-local-tools skill update"
     Then the command succeeds
     And the repository has updated MCP configuration for "echo"
     And the repository has updated skill "reviewer"

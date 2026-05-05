@@ -53,4 +53,5 @@ def run_help(*arguments: str) -> subprocess.CompletedProcess[str]:
         check=False,
         capture_output=True,
         text=True,
+        timeout=10,
     )
