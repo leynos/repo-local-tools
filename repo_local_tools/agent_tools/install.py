@@ -63,6 +63,9 @@ def update_mcps(
 ) -> list[InstallResult]:
     """Update one or all installed MCP servers."""
     manifest = load_manifest(repository)
+    if name is not None and name not in manifest.mcps:
+        msg = f"unknown managed MCP server: {name}"
+        raise InstallError(msg)
     names = (name,) if name is not None else tuple(manifest.mcps)
     return [install_mcp(item_name, repository, xdg_data_home) for item_name in names]
 

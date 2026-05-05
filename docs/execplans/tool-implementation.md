@@ -1,4 +1,4 @@
-# Implement agent tool management CLI
+# Implement agent tool management command-line interface (CLI)
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`,
  `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
@@ -56,7 +56,7 @@ Hard invariants for this plan are:
 - Do not overwrite user-authored local files without an atomic backup or a
   clear idempotent merge strategy.
 - Keep generated, repo-local runtime material ignored by Git unless it is the
-  intentionally committed artifact for `mcp commit` or `skill commit`.
+  intentionally committed artefact for `mcp commit` or `skill commit`.
 - Follow the project documentation style guide in
   `docs/documentation-style-guide.md` for Markdown changes.
 - Use Makefile targets for gates. Run gates sequentially and tee outputs to
@@ -195,7 +195,7 @@ Implementation may proceed within these limits after plan approval:
 
 - Decision: Plan for refusing unsafe Git commits from the CLI rather than
   staging broad repository state. Rationale: `mcp commit <name>` and
-  `skill commit <name>` should commit a specific managed artifact. Staging
+  `skill commit <name>` should commit a specific managed artefact. Staging
   unrelated changes would violate user work isolation. Date/Author:
   2026-05-05T07:36:21Z / Codex
 
@@ -325,7 +325,7 @@ Stage D is MCP installation. Implement `repo-local-tools mcp install <name>` so
 it loads the named shared definition, renders client-specific local files into
 the current repository, records enough manifest metadata to support later
 updates, and updates `.gitignore` for generated directories. The plan should
-prefer a manifest file such as `.repo-local-tools/managed-tools.toml` for
+prefer a manifest file such as `.repo-local-tools/managed-tools.json` for
 tracking installed tool names, source definition paths, installed file paths,
 and checksums. The manifest itself should be committed when `commit` is invoked
 because it is the source of update and commit ownership.

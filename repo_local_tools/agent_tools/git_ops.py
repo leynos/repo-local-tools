@@ -60,7 +60,7 @@ def _record_for(records: dict[str, ToolRecord], kind: str, name: str) -> ToolRec
     record = records.get(name)
     if record is not None:
         return record
-    msg = f"unknown managed {kind[:-1]}: {name}"
+    msg = f"unknown managed tool: {name}"
     raise GitError(msg)
 
 

@@ -1,10 +1,11 @@
 # repo-local-tools users' guide
 
 `repo-local-tools` manages repository-local agent tool configuration. It reads
-shared source definitions from `$XDG_DATA_HOME/repo-local-tools`, installs the
-requested Model Context Protocol (MCP) servers and skills into the current Git
-repository, records ownership metadata, and lets maintainers update or commit
-managed files explicitly.
+shared source definitions from the XDG (Cross-Desktop Group) data directory at
+`$XDG_DATA_HOME/repo-local-tools`, installs the requested Model Context
+Protocol (MCP) servers and skills into the current Git repository, records
+ownership metadata, and lets maintainers update or commit managed files
+explicitly.
 
 The users' guide is written for maintainers who already have a Git repository
 and want repeatable local configuration for agent clients such as Claude,
@@ -54,7 +55,7 @@ proceed when unrelated changes are present.
 
 ## Source registry layout
 
-The tool reads shared source data from the XDG data directory. If
+The tool reads shared source data from the same XDG data directory. If
 `$XDG_DATA_HOME` is unset, the default root is:
 
 ```plaintext

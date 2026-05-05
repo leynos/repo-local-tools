@@ -4,7 +4,7 @@ This document defines the shared source formats used by `repo-local-tools`. The
 formats are intentionally small so one source entry can render repo-local agent
 client files for Claude, Codex, Factory Droid, and Cursor.
 
-## MCP server definitions
+## Model Context Protocol (MCP) server definitions
 
 MCP server definitions are TOML files under:
 

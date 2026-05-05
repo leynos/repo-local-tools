@@ -7,7 +7,13 @@ import json
 import typing as typ
 from pathlib import Path
 
+from repo_local_tools.agent_tools.errors import AgentToolsError
+
 MANIFEST_PATH = Path(".repo-local-tools/managed-tools.json")
+
+
+class ManifestError(AgentToolsError):
+    """Raised when the managed tool manifest is invalid."""
 
 
 @dataclasses.dataclass(frozen=True)
@@ -104,6 +110,10 @@ def _string_tuple(record: dict[object, object], key: str) -> tuple[str, ...]:
     items: list[str] = []
     for item in value:
         if not isinstance(item, str):
-            return ()
+            msg = (
+                f"Invalid manifest field {key!r}: expected list of strings, "
+                f"but found item {item!r} of type {type(item).__name__}"
+            )
+            raise ManifestError(msg)
         items.append(item)
     return tuple(items)
