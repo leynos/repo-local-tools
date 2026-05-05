@@ -33,7 +33,7 @@ def test_commit_managed_tool_commits_owned_paths(tmp_path: Path) -> None:
 
     commit_managed_tool(repository, "mcps", "echo")
 
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603, RUF100
         ["git", "log", "-1", "--pretty=%s"],
         cwd=repository,
         check=True,
@@ -75,7 +75,7 @@ def test_commit_managed_tool_commits_skill_paths(tmp_path: Path) -> None:
 
     commit_managed_tool(repository, "skills", "greeter")
 
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603, RUF100
         ["git", "log", "-1", "--pretty=%s"],
         cwd=repository,
         check=True,
