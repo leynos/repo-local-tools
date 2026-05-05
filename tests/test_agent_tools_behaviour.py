@@ -40,19 +40,25 @@ def context(tmp_path: Path) -> ScenarioContext:
 def git_repository_workspace(context: ScenarioContext) -> None:
     context.repository.mkdir()
     subprocess.run(
-        ["git", "init"], cwd=context.repository, check=True, capture_output=True
+        ["git", "init"],
+        cwd=context.repository,
+        check=True,
+        capture_output=True,
+        timeout=COMMAND_TIMEOUT_SECONDS,
     )
     subprocess.run(
         ["git", "config", "user.email", "tests@example.invalid"],
         cwd=context.repository,
         check=True,
         capture_output=True,
+        timeout=COMMAND_TIMEOUT_SECONDS,
     )
     subprocess.run(
         ["git", "config", "user.name", "Repo Local Tools Tests"],
         cwd=context.repository,
         check=True,
         capture_output=True,
+        timeout=COMMAND_TIMEOUT_SECONDS,
     )
 
 
@@ -243,6 +249,7 @@ def git_contains_commit(context: ScenarioContext, subject: str) -> None:
         check=True,
         capture_output=True,
         text=True,
+        timeout=COMMAND_TIMEOUT_SECONDS,
     )
     actual_subject = result.stdout.strip()
     assert actual_subject == subject, (

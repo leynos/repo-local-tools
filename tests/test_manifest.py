@@ -34,3 +34,13 @@ def test_load_manifest_rejects_partially_invalid_string_lists(tmp_path: Path) ->
 
     with pytest.raises(ManifestError, match="Invalid manifest field 'files'"):
         load_manifest(tmp_path)
+
+
+def test_load_manifest_rejects_malformed_json(tmp_path: Path) -> None:
+    manifest_path = tmp_path / MANIFEST_PATH
+    manifest_path.parent.mkdir(parents=True)
+    manifest_path.write_text("{")
+
+    expected_message = f"Invalid manifest JSON in {manifest_path}"
+    with pytest.raises(ManifestError, match=expected_message):
+        load_manifest(tmp_path)

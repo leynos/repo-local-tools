@@ -47,7 +47,11 @@ def load_manifest(repository: Path) -> Manifest:
     manifest_path = repository / MANIFEST_PATH
     if not manifest_path.exists():
         return Manifest(mcps={}, skills={})
-    parsed = json.loads(manifest_path.read_text())
+    try:
+        parsed = json.loads(manifest_path.read_text())
+    except json.JSONDecodeError as exc:
+        msg = f"Invalid manifest JSON in {manifest_path}: {exc}"
+        raise ManifestError(msg) from exc
     if not isinstance(parsed, dict):
         return Manifest(mcps={}, skills={})
     return Manifest(

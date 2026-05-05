@@ -266,7 +266,7 @@ def _write_mcp_definition(
     definition: McpDefinition,
     xdg_data_home: Path | None,
 ) -> LoadResult:
-    name = _safe_mcp_name(definition.source_path, definition.name)
+    name = definition.name
     destination = data_root(xdg_data_home) / "mcp-servers" / f"{name}.toml"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(_mcp_definition_toml(definition))
