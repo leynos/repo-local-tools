@@ -16,7 +16,7 @@ class ManifestError(AgentToolsError):
     """Raised when the managed tool manifest is invalid."""
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, slots=True)
 class ToolRecord:
     """Manifest metadata for one managed tool."""
 

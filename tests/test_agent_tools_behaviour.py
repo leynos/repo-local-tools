@@ -1,3 +1,10 @@
+"""Behavioural tests for repository-local agent tool workflows.
+
+These pytest-bdd scenarios validate installing, loading, updating, and
+committing MCP servers and skills through the CLI. Run them with
+`uv run pytest tests/test_agent_tools_behaviour.py`.
+"""
+
 from __future__ import annotations
 
 import json
@@ -11,6 +18,7 @@ import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 
 scenarios("features/agent_tools.feature")
+COMMAND_TIMEOUT_SECONDS = 30
 
 
 class ScenarioContext:
@@ -240,19 +248,28 @@ def git_contains_commit(context: ScenarioContext, subject: str) -> None:
 
 
 def run_tool(context: ScenarioContext, command: str) -> None:
-    args = shlex.split(command)
+    stripped_command = command.strip()
+    if not stripped_command:
+        msg = "command must not be empty"
+        raise ValueError(msg)
+    args = shlex.split(stripped_command)
     if args[0] == "repo-local-tools":
         args = [sys.executable, "-m", "repo_local_tools.cli", *args[1:]]
 
     environment = os.environ.copy()
     environment["XDG_DATA_HOME"] = str(context.xdg_data_home)
-    environment["PYTHONPATH"] = str(Path.cwd())
+    existing_pythonpath = os.environ.get("PYTHONPATH", "")
+    if existing_pythonpath:
+        environment["PYTHONPATH"] = f"{existing_pythonpath}{os.pathsep}{Path.cwd()}"
+    else:
+        environment["PYTHONPATH"] = str(Path.cwd())
     context.last_result = subprocess.run(
         args,
         cwd=context.repository,
         env=environment,
         capture_output=True,
         text=True,
+        timeout=COMMAND_TIMEOUT_SECONDS,
     )
 
 

@@ -17,14 +17,13 @@ Codex, Factory Droid, and Cursor.
 or agent skills. It provides a repo-local installation workflow around those
 formats.
 
-- [Model Context Protocol documentation](https://modelcontextprotocol.io/docs/getting-started/intro)
-  explains MCP, its architecture, servers, clients, SDKs, and examples.
-- [Model Context Protocol specification repository](https://github.com/modelcontextprotocol/modelcontextprotocol)
-  contains the protocol specification, schema, and official documentation
-  source.
-- [Anthropic Agent Skills documentation](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
-  explains skill structure, progressive disclosure, supported Claude surfaces,
-  runtime constraints, and examples.
+- Model Context Protocol documentation[^1] explains MCP, its architecture,
+  servers, clients, SDKs, and examples.
+- Model Context Protocol specification repository[^2] contains the protocol
+  specification, schema, and official documentation source.
+- Anthropic Agent Skills documentation[^3] explains skill structure,
+  progressive disclosure, supported Claude surfaces, runtime constraints, and
+  examples.
 
 ## Command overview
 
@@ -402,3 +401,12 @@ repo-local-tools mcp commit hello
 
 See [Agent tool definition format](agent-tool-definition-format.md) for the
 compact in-repository source schema reference.
+
+[^1]: Model Context Protocol documentation:
+    <https://modelcontextprotocol.io/docs/getting-started/intro>.
+
+[^2]: Model Context Protocol specification repository:
+    <https://github.com/modelcontextprotocol/modelcontextprotocol>.
+
+[^3]: Anthropic Agent Skills documentation:
+    <https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview>.

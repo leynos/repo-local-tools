@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import write_mcp_definition
+from conftest import write_mcp_definition, write_skill_definition
 from repo_local_tools.agent_tools.install import (
     InstallError,
     install_mcp,
@@ -48,9 +48,7 @@ def test_install_skill_copies_skill_to_supported_clients(tmp_path: Path) -> None
     repository = tmp_path / "repo"
     xdg_data_home = tmp_path / "xdg"
     repository.mkdir()
-    skill = xdg_data_home / "repo-local-tools" / "skills" / "reviewer"
-    skill.mkdir(parents=True)
-    (skill / "SKILL.md").write_text("Use evidence.\n")
+    write_skill_definition(xdg_data_home, "reviewer")
 
     install_skill("reviewer", repository, xdg_data_home)
 
@@ -158,9 +156,3 @@ def test_update_mcps_and_skills_return_install_results(tmp_path: Path) -> None:
 
     assert {result.name for result in mcp_results} == {"echo"}
     assert {result.name for result in skill_results} == {"reviewer"}
-
-
-def write_skill_definition(xdg_data_home: Path, name: str) -> None:
-    skill = xdg_data_home / "repo-local-tools" / "skills" / name
-    skill.mkdir(parents=True)
-    (skill / "SKILL.md").write_text("Use evidence.\n")

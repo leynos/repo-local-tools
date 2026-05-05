@@ -28,7 +28,7 @@ class InstallError(AgentToolsError):
     """Raised when an install or update cannot be completed."""
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, slots=True)
 class InstallResult:
     """Summary of a managed install or update."""
 

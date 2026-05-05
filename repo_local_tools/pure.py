@@ -5,10 +5,11 @@ compiled, or optimized alternatives are unavailable. The package imports these
 fallbacks automatically when optional native modules cannot be loaded, so
 callers can use the public API without caring which implementation is active.
 
-Example:
-    from repo_local_tools.pure import hello
+Examples
+--------
+>>> from repo_local_tools.pure import hello
 
-    greeting = hello()
+>>> greeting = hello()
 
 """
 

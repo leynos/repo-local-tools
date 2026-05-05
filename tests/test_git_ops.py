@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import initialize_git, write_mcp_definition
+from conftest import initialize_git, write_mcp_definition, write_skill_definition
 from repo_local_tools.agent_tools.git_ops import GitError, commit_managed_tool
 from repo_local_tools.agent_tools.install import install_mcp, install_skill
 
@@ -83,9 +83,3 @@ def test_commit_managed_tool_commits_skill_paths(tmp_path: Path) -> None:
         text=True,
     )
     assert result.stdout.strip() == "Install skill greeter"
-
-
-def write_skill_definition(xdg_data_home: Path, name: str) -> None:
-    skill = xdg_data_home / "repo-local-tools" / "skills" / name
-    skill.mkdir(parents=True)
-    (skill / "SKILL.md").write_text("Say hello.\n")
