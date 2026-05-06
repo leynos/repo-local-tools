@@ -178,44 +178,44 @@ Implementation may proceed within these limits after plan approval:
   and `skill` Cyclopts subcommands below it. Rationale: The package name
   already communicates the scope, and a single top-level script avoids
   collisions with generic commands named `mcp` or `skill`. Date/Author:
-  2026-05-05T07:36:21Z / Codex
+  2026-05-05T07:36:21Z / Codex.
 
 - Decision: Treat shared definitions as local source registries under
   `$XDG_DATA_HOME/repo-local-tools/mcp-servers` and
   `$XDG_DATA_HOME/repo-local-tools/skills`. Rationale: This follows the user's
   requested source paths and keeps global package data separate from
-  per-repository generated files. Date/Author: 2026-05-05T07:36:21Z / Codex
+  per-repository generated files. Date/Author: 2026-05-05T07:36:21Z / Codex.
 
 - Decision: Make client support adapter-based.
   Rationale: Claude, Codex, Factory Droid, and Cursor have different config
   shapes. Adapters keep shared definition parsing independent of client file
   rendering and make unsupported or changing clients easier to isolate.
-  Date/Author: 2026-05-05T07:36:21Z / Codex
+  Date/Author: 2026-05-05T07:36:21Z / Codex.
 
 - Decision: Plan for refusing unsafe Git commits from the CLI rather than
   staging broad repository state. Rationale: `mcp commit <name>` and
   `skill commit <name>` should commit a specific managed artefact. Staging
   unrelated changes would violate user work isolation. Date/Author:
-  2026-05-05T07:36:21Z / Codex
+  2026-05-05T07:36:21Z / Codex.
 
 - Decision: Store the repo-local managed-tool manifest as JSON at
   `.repo-local-tools/managed-tools.json`. Rationale: MCP source definitions use
   TOML as planned, but the manifest must be written by the tool. Python has a
   standard JSON writer, avoiding a second runtime dependency or a hand-rolled
-  TOML serializer. Date/Author: 2026-05-05T08:10:40Z / Codex
+  TOML serializer. Date/Author: 2026-05-05T08:10:40Z / Codex.
 
 - Decision: Render MCP definitions into `.mcp.json`, `.codex/mcp.json`,
   `.factory-droid/mcp.json`, and `.cursor/mcp.json` using the same `mcpServers`
   JSON shape. Rationale: The shared shape provides one preferred definition
   form across Claude, Codex, Factory Droid, and Cursor while keeping client
   adapters small and replaceable if a confirmed client-specific schema is later
-  needed. Date/Author: 2026-05-05T08:10:40Z / Codex
+  needed. Date/Author: 2026-05-05T08:10:40Z / Codex.
 
 - Decision: Install skills into `.claude/skills/<name>`,
   `.codex/skills/<name>`, `.factory-droid/skills/<name>`, and
   `.cursor/skills/<name>`. Rationale: This gives every requested client a
   deterministic repo-local target while preserving the original skill directory
-  contents exactly. Date/Author: 2026-05-05T08:10:40Z / Codex
+  contents exactly. Date/Author: 2026-05-05T08:10:40Z / Codex.
 
 ## Outcomes & retrospective
 
