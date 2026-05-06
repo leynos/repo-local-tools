@@ -5,11 +5,15 @@ description = "repo-local-tools package"
 readme = "README.md"
 requires-python = ">=3.14"
 license = { text = "ISC" }
-dependencies = []
+dependencies = [
+    "cyclopts",
+]
 
 [dependency-groups]
 dev = [
     "pytest",
+    "pytest-bdd",
+    "syrupy",
     "ruff",
     "pyright",
     "pytest-timeout",
@@ -80,7 +84,7 @@ extend-ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "**/test_*.py" = ["S101", "PLR0913", "PLR2004"]
-"tests/steps/*.py" = ["S101", "PLR0913", "PLR2004"]
+"tests/**" = ["D", "S101", "S404", "S603", "S607", "PLR0913", "PLR2004", "TC003"]
 
 [tool.ruff.lint.flake8-import-conventions]
 # Declare the banned `from` imports.
@@ -127,4 +131,3 @@ package = true
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-

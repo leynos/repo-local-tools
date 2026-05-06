@@ -1,0 +1,12 @@
+# serializer version: 1
+# name: test_load_mcp_json_snapshot
+  '''
+  name = "echo"
+  command = "python"
+  args = ["-m", "example"]
+  
+  [env]
+  "APP.MODE" = "test"
+  
+  '''
+# ---
