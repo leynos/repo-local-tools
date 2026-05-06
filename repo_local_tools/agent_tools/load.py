@@ -214,12 +214,23 @@ def _copy_skill_to_registry(
     source: Path,
     xdg_data_home: Path | None,
 ) -> LoadResult:
+    _reject_skill_symlinks(source)
     destination = data_root(xdg_data_home) / "skills" / name
     if destination.exists():
         shutil.rmtree(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source, destination)
     return LoadResult(kind="skill", name=name, path=destination)
+
+
+def _reject_skill_symlinks(source: Path) -> None:
+    if source.is_symlink():
+        msg = f"skill source must not be a symlink: {source}"
+        raise LoadError(msg)
+    for path in source.rglob("*"):
+        if path.is_symlink():
+            msg = f"skill source must not contain symlinks: {path}"
+            raise LoadError(msg)
 
 
 def _load_mcp_json(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:

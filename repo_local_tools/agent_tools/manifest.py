@@ -67,9 +67,10 @@ def save_manifest(repository: Path, manifest: Manifest) -> None:
     """Write the repo-local managed tool manifest."""
     manifest_path = repository / MANIFEST_PATH
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    manifest_path.write_text(
-        f"{json.dumps(_dump_manifest(manifest), indent=2, sort_keys=True)}\n"
-    )
+    payload = f"{json.dumps(_dump_manifest(manifest), indent=2, sort_keys=True)}\n"
+    temporary_path = manifest_path.with_name(f"{manifest_path.name}.tmp")
+    temporary_path.write_text(payload)
+    temporary_path.replace(manifest_path)
 
 
 def _manifest_section(

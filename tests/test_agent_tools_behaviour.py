@@ -135,12 +135,7 @@ def command_succeeds(context: ScenarioContext) -> None:
     )
 )
 def repository_has_mcp_config(context: ScenarioContext, name: str) -> None:
-    for relative_path in [
-        ".mcp.json",
-        ".codex/mcp.json",
-        ".factory-droid/mcp.json",
-        ".cursor/mcp.json",
-    ]:
+    for relative_path in MCP_CONFIG_PATHS:
         config_path = context.repository / relative_path
         config = json.loads(config_path.read_text())
         actual_command = config["mcpServers"][name]["command"]
@@ -154,12 +149,7 @@ def repository_has_mcp_config(context: ScenarioContext, name: str) -> None:
 def gitignore_ignores_mcp(context: ScenarioContext, path: str) -> None:
     gitignore_path = context.repository / path
     content = gitignore_path.read_text()
-    for pattern in [
-        ".mcp.json",
-        ".codex/mcp.json",
-        ".factory-droid/mcp.json",
-        ".cursor/mcp.json",
-    ]:
+    for pattern in (relative_path.as_posix() for relative_path in MCP_CONFIG_PATHS):
         assert pattern in content, (
             f"expected {gitignore_path} to include {pattern!r}; content: {content!r}"
         )
@@ -167,13 +157,8 @@ def gitignore_ignores_mcp(context: ScenarioContext, path: str) -> None:
 
 @then(parsers.parse('the repository has skill "{name}" in every supported client'))
 def repository_has_skill(context: ScenarioContext, name: str) -> None:
-    for relative_path in [
-        f".claude/skills/{name}/SKILL.md",
-        f".codex/skills/{name}/SKILL.md",
-        f".factory-droid/skills/{name}/SKILL.md",
-        f".cursor/skills/{name}/SKILL.md",
-    ]:
-        skill_path = context.repository / relative_path
+    for root in SKILL_ROOTS:
+        skill_path = context.repository / root / name / "SKILL.md"
         content = skill_path.read_text()
         assert content == "initial\n", (
             f"expected skill file {skill_path} to contain 'initial\\n', "
@@ -185,12 +170,7 @@ def repository_has_skill(context: ScenarioContext, name: str) -> None:
 def gitignore_ignores_skills(context: ScenarioContext, path: str) -> None:
     gitignore_path = context.repository / path
     content = gitignore_path.read_text()
-    for pattern in [
-        ".claude/skills/",
-        ".codex/skills/",
-        ".factory-droid/skills/",
-        ".cursor/skills/",
-    ]:
+    for pattern in (f"{root.as_posix()}/" for root in SKILL_ROOTS):
         assert pattern in content, (
             f"expected {gitignore_path} to include {pattern!r}; content: {content!r}"
         )

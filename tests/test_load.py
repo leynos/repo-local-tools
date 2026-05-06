@@ -130,6 +130,29 @@ def test_load_directory_rejects_duplicate_mcp_results(tmp_path: Path) -> None:
     )
 
 
+def test_load_skill_directory_rejects_symlink_source(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "SKILL.md").write_text("Skill body.\n")
+    symlink = tmp_path / "linked-skill"
+    symlink.symlink_to(source, target_is_directory=True)
+
+    with pytest.raises(LoadError, match="skill source must not be a symlink"):
+        load_path(symlink, tmp_path, tmp_path / "xdg")
+
+
+def test_load_skill_directory_rejects_nested_symlink(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    outside = tmp_path / "outside.txt"
+    source.mkdir()
+    (source / "SKILL.md").write_text("Skill body.\n")
+    outside.write_text("outside\n")
+    (source / "outside-link.txt").symlink_to(outside)
+
+    with pytest.raises(LoadError, match="skill source must not contain symlinks"):
+        load_path(source, tmp_path, tmp_path / "xdg")
+
+
 def test_load_skill_md_uses_frontmatter_name(tmp_path: Path) -> None:
     source = tmp_path / "src"
     xdg_data_home = tmp_path / "xdg"
