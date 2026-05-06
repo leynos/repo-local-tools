@@ -96,7 +96,7 @@ Implementation may proceed within these limits after plan approval:
   Droid, and Cursor may differ by client version or may not have project-local
   equivalents. Severity: high Likelihood: medium Mitigation: Model clients as
   adapters with small, testable path/render functions. Use shared definitions
-  as the source of truth and make unsupported clients fail explicitly until a
+  as the source of truth, and make unsupported clients fail explicitly until a
   location is confirmed.
 
 - Risk: The shared definition format is not specified by an existing file.
@@ -279,7 +279,7 @@ from a user's perspective. The MCP registry should start with one file per MCP
 server under `$XDG_DATA_HOME/repo-local-tools/mcp-servers`, using a
 deterministic extension such as `.toml` or `.json`. The implementation should
 choose TOML unless the existing ecosystem examples in this repository point
-elsewhere, because Python 3.11 includes `tomllib` for reading TOML and
+elsewhere because Python 3.11 includes `tomllib` for reading TOML and
 `pyproject.toml` already makes TOML familiar to maintainers. If writing TOML is
 required, either write it manually for simple files or stop before adding a
 writer dependency.
@@ -456,7 +456,8 @@ Required tests:
   and Git owned-path calculation.
 - `pytest-bdd` behavioural tests cover command-line scenarios for install,
   update, and commit flows for both MCP servers and skills.
-- Importing `repo_local_tools.cli` succeeds and Cyclopts registers the `mcp` and
+- Importing `repo_local_tools.cli` succeeds, and Cyclopts registers the `mcp`
+  and
   `skill` command groups.
 - `repo-local-tools mcp install example` reads
   `$XDG_DATA_HOME/repo-local-tools/mcp-servers/example.toml` or the selected
@@ -519,7 +520,7 @@ users guide content: heading only
 ```
 
 Relevant prior lesson from memory: Cyclopts command registration can fail when
-argument annotation types are imported only under `TYPE_CHECKING`, because
+argument annotation types are imported only under `TYPE_CHECKING` because
 Cyclopts resolves annotations through `typing.get_type_hints()` at runtime.
 
 ## Interfaces and dependencies
