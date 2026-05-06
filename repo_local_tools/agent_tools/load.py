@@ -66,7 +66,8 @@ def _resolve_source(source: Path, cwd: Path) -> Path:
 
 def _load_file(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
     if source.name == "SKILL.md":
-        return [_load_skill_directory(source.parent, xdg_data_home)]
+        candidate = _skill_directory_candidate(source.parent, xdg_data_home)
+        return [candidate.write()]
     if source.suffix == ".skill":
         return [_load_skill_archive(source, xdg_data_home)]
     if source.name in MCP_JSON_FILENAMES:
@@ -205,7 +206,7 @@ def _skill_name(skill_file: Path, fallback: str) -> str:
 
 
 def _frontmatter_name(skill_file: Path) -> str | None:
-    lines = skill_file.read_text().splitlines()
+    lines = skill_file.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "---":
         return None
     for line in lines[1:]:
@@ -253,7 +254,7 @@ def _mcp_json_candidates(
     xdg_data_home: Path | None,
 ) -> list[_LoadCandidate]:
     try:
-        parsed = json.loads(source.read_text())
+        parsed = json.loads(source.read_text(encoding="utf-8"))
     except json.JSONDecodeError as error:
         msg = f"{source} must contain valid JSON: {error.msg}"
         raise LoadError(msg) from error
@@ -377,7 +378,7 @@ def _write_mcp_definition(
     name = definition.name
     destination = data_root(xdg_data_home) / "mcp-servers" / f"{name}.toml"
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(_mcp_definition_toml(definition))
+    destination.write_text(_mcp_definition_toml(definition), encoding="utf-8")
     return LoadResult(kind="mcp", name=name, path=destination)
 
 

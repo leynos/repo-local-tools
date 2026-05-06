@@ -163,6 +163,18 @@ def test_load_skill_directory_rejects_nested_symlink(tmp_path: Path) -> None:
         load_path(source, tmp_path, tmp_path / "xdg")
 
 
+def test_load_skill_md_rejects_nested_symlink(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    outside = tmp_path / "outside.txt"
+    source.mkdir()
+    (source / "SKILL.md").write_text("Skill body.\n")
+    outside.write_text("outside\n")
+    (source / "outside-link.txt").symlink_to(outside)
+
+    with pytest.raises(LoadError, match="skill source must not contain symlinks"):
+        load_path(source / "SKILL.md", tmp_path, tmp_path / "xdg")
+
+
 def test_load_directory_rejects_symlink_candidate_before_writes(
     tmp_path: Path,
 ) -> None:

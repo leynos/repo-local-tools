@@ -97,4 +97,7 @@ def test_save_manifest_replaces_manifest_without_tmp_file(tmp_path: Path) -> Non
         f"expected save_manifest to replace {manifest_path}, but found "
         f"temporary file {temporary_path}"
     )
-    assert load_manifest(tmp_path).mcps["echo"].source == "echo.toml"
+    actual_source = load_manifest(tmp_path).mcps["echo"].source
+    assert actual_source == "echo.toml", (
+        f"expected echo source to be 'echo.toml' but got {actual_source!r}"
+    )

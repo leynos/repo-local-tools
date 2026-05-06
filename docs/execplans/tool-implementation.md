@@ -188,7 +188,7 @@ Implementation may proceed within these limits after plan approval:
 
 - Decision: Make client support adapter-based.
   Rationale: Claude, Codex, Factory Droid, and Cursor have different config
-  shapes. Adapters keep shared definition parsing independent from client file
+  shapes. Adapters keep shared definition parsing independent of client file
   rendering and make unsupported or changing clients easier to isolate.
   Date/Author: 2026-05-05T07:36:21Z / Codex
 
@@ -279,7 +279,7 @@ from a user's perspective. The MCP registry should start with one file per MCP
 server under `$XDG_DATA_HOME/repo-local-tools/mcp-servers`, using a
 deterministic extension such as `.toml` or `.json`. The implementation should
 choose TOML unless the existing ecosystem examples in this repository point
-elsewhere, because Python 3.14 includes `tomllib` for reading TOML and
+elsewhere, because Python 3.11 includes `tomllib` for reading TOML and
 `pyproject.toml` already makes TOML familiar to maintainers. If writing TOML is
 required, either write it manually for simple files or stop before adding a
 writer dependency.
