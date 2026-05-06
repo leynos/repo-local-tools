@@ -17,6 +17,8 @@ from pathlib import Path
 import pytest
 from pytest_bdd import given, parsers, scenarios, then, when
 
+from repo_local_tools.agent_tools.clients import MCP_CONFIG_PATHS, SKILL_ROOTS
+
 scenarios("features/agent_tools.feature")
 COMMAND_TIMEOUT_SECONDS = 30
 
@@ -196,23 +198,26 @@ def gitignore_ignores_skills(context: ScenarioContext, path: str) -> None:
 
 @then(parsers.parse('the repository has updated MCP configuration for "{name}"'))
 def repository_has_updated_mcp(context: ScenarioContext, name: str) -> None:
-    config_path = context.repository / ".mcp.json"
-    config = json.loads(config_path.read_text())
-    actual_command = config["mcpServers"][name]["command"]
-    assert actual_command == "python3", (
-        f"expected updated MCP {name!r} to use command 'python3', "
-        f"found {actual_command!r}; config at {config_path}: {config!r}"
-    )
+    for relative_path in MCP_CONFIG_PATHS:
+        config_path = context.repository / relative_path
+        config = json.loads(config_path.read_text())
+        actual_command = config["mcpServers"][name]["command"]
+        assert actual_command == "python3", (
+            f"expected updated MCP {name!r} in {relative_path} to use command "
+            f"'python3', found {actual_command!r}; config at {config_path}: "
+            f"{config!r}"
+        )
 
 
 @then(parsers.parse('the repository has updated skill "{name}"'))
 def repository_has_updated_skill(context: ScenarioContext, name: str) -> None:
-    skill_path = context.repository / f".claude/skills/{name}/SKILL.md"
-    content = skill_path.read_text()
-    assert content == "updated\n", (
-        f"expected updated skill file {skill_path} to contain 'updated\\n', "
-        f"found {content!r}"
-    )
+    for root in SKILL_ROOTS:
+        skill_path = context.repository / root / name / "SKILL.md"
+        content = skill_path.read_text()
+        assert content == "updated\n", (
+            f"expected updated skill file {skill_path} to contain 'updated\\n', "
+            f"found {content!r}"
+        )
 
 
 @then(parsers.parse('the shared registry has skill "{name}"'))

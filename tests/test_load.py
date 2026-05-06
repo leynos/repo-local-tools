@@ -32,7 +32,7 @@ def test_load_directory_discovers_all_supported_sources(tmp_path: Path) -> None:
                     "echo": {
                         "command": "python",
                         "args": ["-m", "example"],
-                        "env": {"MODE": "test"},
+                        "env": {"APP.MODE": "test"},
                     },
                 },
             },
@@ -90,8 +90,43 @@ def test_load_directory_discovers_all_supported_sources(tmp_path: Path) -> None:
     assert 'args = ["-m", "example"]' in mcp_definition, (
         f"expected MCP TOML to contain example args; content: {mcp_definition!r}"
     )
-    assert 'MODE = "test"' in mcp_definition, (
-        f"expected MCP TOML to contain MODE env; content: {mcp_definition!r}"
+    assert '"APP.MODE" = "test"' in mcp_definition, (
+        f"expected MCP TOML to contain APP.MODE env; content: {mcp_definition!r}"
+    )
+
+
+def test_load_directory_rejects_duplicate_skill_results(tmp_path: Path) -> None:
+    source = tmp_path / "workspace" / "reviewer"
+    xdg_data_home = tmp_path / "xdg"
+    source.mkdir(parents=True)
+    (source / "SKILL.md").write_text("Root skill.\n")
+    nested = source / "skills" / "reviewer"
+    nested.mkdir(parents=True)
+    (nested / "SKILL.md").write_text("Nested skill.\n")
+
+    with pytest.raises(LoadError, match="duplicate load results: skill 'reviewer'"):
+        load_path(None, source, xdg_data_home)
+
+    registry_path = xdg_data_home / "repo-local-tools" / "skills" / "reviewer"
+    assert not registry_path.exists(), (
+        f"expected duplicate load to avoid writing {registry_path}"
+    )
+
+
+def test_load_directory_rejects_duplicate_mcp_results(tmp_path: Path) -> None:
+    source = tmp_path / "workspace"
+    xdg_data_home = tmp_path / "xdg"
+    source.mkdir()
+    payload = json.dumps({"mcpServers": {"echo": {"command": "python"}}})
+    (source / "mcp.json").write_text(payload)
+    (source / "mcpServers.json").write_text(payload)
+
+    with pytest.raises(LoadError, match="duplicate load results: mcp 'echo'"):
+        load_path(None, source, xdg_data_home)
+
+    registry_path = xdg_data_home / "repo-local-tools" / "mcp-servers" / "echo.toml"
+    assert not registry_path.exists(), (
+        f"expected duplicate load to avoid writing {registry_path}"
     )
 
 
@@ -215,7 +250,7 @@ def test_load_mcp_json_snapshot(
                     "echo": {
                         "command": "python",
                         "args": ["-m", "example"],
-                        "env": {"MODE": "test"},
+                        "env": {"APP.MODE": "test"},
                     },
                 },
             },

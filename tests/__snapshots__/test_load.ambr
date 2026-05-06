@@ -6,7 +6,7 @@
   args = ["-m", "example"]
   
   [env]
-  MODE = "test"
+  "APP.MODE" = "test"
   
   '''
 # ---

@@ -37,6 +37,12 @@ class LoadResult:
     path: Path
 
 
+@dataclasses.dataclass(frozen=True, slots=True)
+class _LoadCandidate:
+    result: LoadResult
+    write: cabc.Callable[[], LoadResult]
+
+
 def load_path(
     source: Path | None,
     cwd: Path,
@@ -70,19 +76,21 @@ def _load_file(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
 
 
 def _load_directory(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
-    loaders: list[cabc.Callable[[], list[LoadResult]]] = []
+    loaders: list[cabc.Callable[[], list[_LoadCandidate]]] = []
     if (source / "SKILL.md").exists():
-        loaders.append(lambda: [_load_skill_directory(source, xdg_data_home)])
+        loaders.append(lambda: [_skill_directory_candidate(source, xdg_data_home)])
     for mcp_filename in sorted(MCP_JSON_FILENAMES):
         mcp_source = source / mcp_filename
         if mcp_source.exists():
             loaders.append(
-                lambda mcp_source=mcp_source: _load_mcp_json(mcp_source, xdg_data_home)
+                lambda mcp_source=mcp_source: _mcp_json_candidates(
+                    mcp_source, xdg_data_home
+                )
             )
     loaders.extend(
         (
             lambda archive_path=archive_path: [
-                _load_skill_archive(archive_path, xdg_data_home)
+                _skill_archive_candidate(archive_path, xdg_data_home)
             ]
         )
         for archive_path in sorted(source.glob("*.skill"))
@@ -92,17 +100,50 @@ def _load_directory(source: Path, xdg_data_home: Path | None) -> list[LoadResult
         if skill_root.is_dir():
             loaders.extend(
                 lambda skill_directory=skill_directory: [
-                    _load_skill_directory(skill_directory, xdg_data_home)
+                    _skill_directory_candidate(skill_directory, xdg_data_home)
                 ]
                 for skill_directory in sorted(skill_root.iterdir())
                 if skill_directory.is_dir()
             )
 
-    results = [result for loader in loaders for result in loader()]
-    if results:
-        return results
+    candidates = [candidate for loader in loaders for candidate in loader()]
+    if candidates:
+        _reject_duplicate_results(candidate.result for candidate in candidates)
+        return [candidate.write() for candidate in candidates]
     msg = f"no supported tool sources found in {source}"
     raise LoadError(msg)
+
+
+def _reject_duplicate_results(results: typ.Iterable[LoadResult]) -> None:
+    seen: set[tuple[str, str]] = set()
+    duplicates: set[tuple[str, str]] = set()
+    for result in results:
+        key = (result.kind, result.name)
+        if key in seen:
+            duplicates.add(key)
+        else:
+            seen.add(key)
+    if duplicates:
+        duplicate_names = ", ".join(
+            f"{kind} {name!r}" for kind, name in sorted(duplicates)
+        )
+        msg = f"duplicate load results: {duplicate_names}"
+        raise LoadError(msg)
+
+
+def _skill_archive_candidate(
+    archive_path: Path,
+    xdg_data_home: Path | None,
+) -> _LoadCandidate:
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        extracted = extract_skill_archive(
+            archive_path.resolve(), Path(temporary_directory) / "skill"
+        )
+        name = _skill_name(extracted / "SKILL.md", extracted.name)
+    return _LoadCandidate(
+        result=_skill_result(name, xdg_data_home),
+        write=lambda: _load_skill_archive(archive_path, xdg_data_home),
+    )
 
 
 def _load_skill_archive(archive_path: Path, xdg_data_home: Path | None) -> LoadResult:
@@ -114,6 +155,21 @@ def _load_skill_archive(archive_path: Path, xdg_data_home: Path | None) -> LoadR
         return _copy_skill_to_registry(name, extracted, xdg_data_home)
 
 
+def _skill_directory_candidate(
+    source: Path,
+    xdg_data_home: Path | None,
+) -> _LoadCandidate:
+    skill_file = source / "SKILL.md"
+    if not skill_file.exists():
+        msg = f"skill source must contain SKILL.md: {source}"
+        raise LoadError(msg)
+    name = _skill_name(skill_file, source.name)
+    return _LoadCandidate(
+        result=_skill_result(name, xdg_data_home),
+        write=lambda: _load_skill_directory(source, xdg_data_home),
+    )
+
+
 def _load_skill_directory(source: Path, xdg_data_home: Path | None) -> LoadResult:
     skill_file = source / "SKILL.md"
     if not skill_file.exists():
@@ -121,6 +177,14 @@ def _load_skill_directory(source: Path, xdg_data_home: Path | None) -> LoadResul
         raise LoadError(msg)
     name = _skill_name(skill_file, source.name)
     return _copy_skill_to_registry(name, source, xdg_data_home)
+
+
+def _skill_result(name: str, xdg_data_home: Path | None) -> LoadResult:
+    return LoadResult(
+        kind="skill",
+        name=name,
+        path=data_root(xdg_data_home) / "skills" / name,
+    )
 
 
 def _skill_name(skill_file: Path, fallback: str) -> str:
@@ -159,6 +223,15 @@ def _copy_skill_to_registry(
 
 
 def _load_mcp_json(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
+    return [
+        candidate.write() for candidate in _mcp_json_candidates(source, xdg_data_home)
+    ]
+
+
+def _mcp_json_candidates(
+    source: Path,
+    xdg_data_home: Path | None,
+) -> list[_LoadCandidate]:
     try:
         parsed = json.loads(source.read_text())
     except json.JSONDecodeError as error:
@@ -172,11 +245,26 @@ def _load_mcp_json(source: Path, xdg_data_home: Path | None) -> list[LoadResult]
         msg = f"{source} must define a non-empty mcpServers object"
         raise LoadError(msg)
 
-    results: list[LoadResult] = []
+    candidates: list[_LoadCandidate] = []
     for name, value in sorted(servers_value.items()):
         definition = _mcp_definition(source, name, value)
-        results.append(_write_mcp_definition(definition, xdg_data_home))
-    return results
+        candidates.append(
+            _LoadCandidate(
+                result=_mcp_result(definition.name, xdg_data_home),
+                write=lambda definition=definition: _write_mcp_definition(
+                    definition, xdg_data_home
+                ),
+            )
+        )
+    return candidates
+
+
+def _mcp_result(name: str, xdg_data_home: Path | None) -> LoadResult:
+    return LoadResult(
+        kind="mcp",
+        name=name,
+        path=data_root(xdg_data_home) / "mcp-servers" / f"{name}.toml",
+    )
 
 
 def _mcp_definition(source: Path, name: object, value: object) -> McpDefinition:
@@ -284,7 +372,7 @@ def _mcp_definition_toml(definition: McpDefinition) -> str:
     if definition.env:
         lines.extend(("", "[env]"))
         lines.extend(
-            f"{key} = {_toml_string(value)}"
+            f"{_toml_string(key)} = {_toml_string(value)}"
             for key, value in sorted(definition.env.items())
         )
     return "\n".join(lines) + "\n"
