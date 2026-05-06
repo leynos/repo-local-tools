@@ -40,9 +40,8 @@ rename the script before implementation begins and record that decision here.
 Hard invariants for this plan are:
 
 - Do not begin implementation until this draft is explicitly approved.
-- Keep `repo_local_tools/__init__.py` backwards compatible: existing imports of
-  `hello` must keep working unless the user approves removal of the generated
-  template example.
+- The generated template `hello` example and optional Rust-extension fallback
+  have been removed by user request; do not reintroduce that placeholder API.
 - Use Cyclopts for the command tree and add it as a runtime dependency in
   `pyproject.toml`.
 - Keep CLI argument annotation types that Cyclopts resolves at runtime, such as
@@ -232,10 +231,10 @@ Cursor.
 ## Context and orientation
 
 The repository root is `/data/leynos/Projects/repo-local-tools`. The package is
-configured in `pyproject.toml`, currently with no runtime dependencies and no
-`[project.scripts]` table. The Python package directory is `repo_local_tools/`.
-It currently contains only `__init__.py` and `pure.py`, both from a generated
-example. The project uses Hatchling as the build backend and `uv` for syncing.
+configured in `pyproject.toml`. The Python package directory is
+`repo_local_tools/`; the generated `hello` placeholder, `pure.py` fallback, and
+optional Rust-extension import have been removed. The project uses Hatchling as
+the build backend and `uv` for syncing.
 
 The Makefile is the operational source of truth for gates. `make all` runs
 `build`, `check-fmt`, `lint`, `typecheck`, and `test`. Markdown-only changes
