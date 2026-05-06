@@ -7,6 +7,7 @@ committing MCP servers and skills through the CLI. Run them with
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import os
 import shlex
@@ -23,19 +24,20 @@ scenarios("features/agent_tools.feature")
 COMMAND_TIMEOUT_SECONDS = 30
 
 
+@dataclasses.dataclass(slots=True)
 class ScenarioContext:
-    def __init__(self) -> None:
-        self.repository = Path()
-        self.xdg_data_home = Path()
-        self.last_result: subprocess.CompletedProcess[str] | None = None
+    repository: Path
+    xdg_data_home: Path
+    last_result: subprocess.CompletedProcess[str] | None
 
 
 @pytest.fixture
 def context(tmp_path: Path) -> ScenarioContext:
-    context = ScenarioContext()
-    context.repository = tmp_path / "repository"
-    context.xdg_data_home = tmp_path / "xdg"
-    return context
+    return ScenarioContext(
+        repository=tmp_path / "repository",
+        xdg_data_home=tmp_path / "xdg",
+        last_result=None,
+    )
 
 
 @given("a git repository workspace")

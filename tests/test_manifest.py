@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -44,7 +45,7 @@ def test_load_manifest_rejects_malformed_json(tmp_path: Path) -> None:
     manifest_path.parent.mkdir(parents=True)
     manifest_path.write_text("{")
 
-    expected_message = f"Invalid manifest JSON in {manifest_path}"
+    expected_message = re.escape(f"Invalid manifest JSON in {manifest_path}")
     with pytest.raises(ManifestError, match=expected_message):
         load_manifest(tmp_path)
 

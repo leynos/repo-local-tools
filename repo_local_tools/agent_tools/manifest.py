@@ -48,7 +48,7 @@ def load_manifest(repository: Path) -> Manifest:
     if not manifest_path.exists():
         return Manifest(mcps={}, skills={})
     try:
-        parsed = json.loads(manifest_path.read_text())
+        parsed = json.loads(manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         msg = f"Invalid manifest JSON in {manifest_path}: {exc}"
         raise ManifestError(msg) from exc
@@ -69,7 +69,7 @@ def save_manifest(repository: Path, manifest: Manifest) -> None:
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     payload = f"{json.dumps(_dump_manifest(manifest), indent=2, sort_keys=True)}\n"
     temporary_path = manifest_path.with_name(f"{manifest_path.name}.tmp")
-    temporary_path.write_text(payload)
+    temporary_path.write_text(payload, encoding="utf-8")
     temporary_path.replace(manifest_path)
 
 

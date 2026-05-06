@@ -130,6 +130,16 @@ def test_load_directory_rejects_duplicate_mcp_results(tmp_path: Path) -> None:
     )
 
 
+def test_load_skill_archive_wraps_archive_error(tmp_path: Path) -> None:
+    archive = tmp_path / "corrupt.skill"
+    archive.write_text("not a zip archive")
+
+    with pytest.raises(LoadError, match="failed to load skill archive") as error:
+        load_path(archive, tmp_path, tmp_path / "xdg")
+
+    assert error.value.__cause__ is not None, "expected original archive error cause"
+
+
 def test_load_skill_directory_rejects_symlink_source(tmp_path: Path) -> None:
     source = tmp_path / "source"
     source.mkdir()
@@ -151,6 +161,30 @@ def test_load_skill_directory_rejects_nested_symlink(tmp_path: Path) -> None:
 
     with pytest.raises(LoadError, match="skill source must not contain symlinks"):
         load_path(source, tmp_path, tmp_path / "xdg")
+
+
+def test_load_directory_rejects_symlink_candidate_before_writes(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "workspace"
+    xdg_data_home = tmp_path / "xdg"
+    valid = workspace / "skills" / "alpha"
+    invalid = workspace / "skills" / "bravo"
+    outside = tmp_path / "outside.txt"
+    valid.mkdir(parents=True)
+    invalid.mkdir()
+    outside.write_text("outside\n")
+    (valid / "SKILL.md").write_text("Valid skill.\n")
+    (invalid / "SKILL.md").write_text("Invalid skill.\n")
+    (invalid / "outside-link.txt").symlink_to(outside)
+
+    with pytest.raises(LoadError, match="skill source must not contain symlinks"):
+        load_path(None, workspace, xdg_data_home)
+
+    registry = xdg_data_home / "repo-local-tools" / "skills"
+    assert not registry.exists(), (
+        f"expected failed candidate collection to leave registry unchanged: {registry}"
+    )
 
 
 def test_load_skill_md_uses_frontmatter_name(tmp_path: Path) -> None:

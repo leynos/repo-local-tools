@@ -10,7 +10,7 @@ import tempfile
 import typing as typ
 from pathlib import Path
 
-from repo_local_tools.agent_tools.archives import extract_skill_archive
+from repo_local_tools.agent_tools.archives import ArchiveError, extract_skill_archive
 from repo_local_tools.agent_tools.definitions import McpDefinition
 from repo_local_tools.agent_tools.errors import AgentToolsError
 from repo_local_tools.agent_tools.paths import data_root
@@ -136,7 +136,7 @@ def _skill_archive_candidate(
     xdg_data_home: Path | None,
 ) -> _LoadCandidate:
     with tempfile.TemporaryDirectory() as temporary_directory:
-        extracted = extract_skill_archive(
+        extracted = _extract_archive_for_load(
             archive_path.resolve(), Path(temporary_directory) / "skill"
         )
         name = _skill_name(extracted / "SKILL.md", extracted.name)
@@ -148,11 +148,19 @@ def _skill_archive_candidate(
 
 def _load_skill_archive(archive_path: Path, xdg_data_home: Path | None) -> LoadResult:
     with tempfile.TemporaryDirectory() as temporary_directory:
-        extracted = extract_skill_archive(
+        extracted = _extract_archive_for_load(
             archive_path.resolve(), Path(temporary_directory) / "skill"
         )
         name = _skill_name(extracted / "SKILL.md", extracted.name)
         return _copy_skill_to_registry(name, extracted, xdg_data_home)
+
+
+def _extract_archive_for_load(archive_path: Path, extract_root: Path) -> Path:
+    try:
+        return extract_skill_archive(archive_path, extract_root)
+    except ArchiveError as error:
+        msg = f"failed to load skill archive: {archive_path}"
+        raise LoadError(msg) from error
 
 
 def _skill_directory_candidate(
@@ -163,6 +171,7 @@ def _skill_directory_candidate(
     if not skill_file.exists():
         msg = f"skill source must contain SKILL.md: {source}"
         raise LoadError(msg)
+    _reject_skill_symlinks(source)
     name = _skill_name(skill_file, source.name)
     return _LoadCandidate(
         result=_skill_result(name, xdg_data_home),
