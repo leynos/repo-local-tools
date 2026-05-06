@@ -490,10 +490,10 @@ Quality criteria:
 ## Idempotence and recovery
 
 Install and update commands must be safe to run repeatedly. Re-running an
-install for the same MCP server or skill should refresh managed files from the
-same source definition, leave unrelated local files untouched, and avoid adding
-duplicate `.gitignore` lines. Re-running update should produce either a changed
-or unchanged summary without corrupting the manifest.
+installation for the same MCP server or skill should refresh managed files from
+the same source definition, leave unrelated local files untouched, and avoid
+adding duplicate `.gitignore` lines. Re-running update should produce either a
+changed or unchanged summary without corrupting the manifest.
 
 For archive installation, extraction should occur in a temporary directory. If
 validation fails, no target files should be changed. If copying fails halfway,

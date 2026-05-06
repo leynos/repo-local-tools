@@ -18,9 +18,17 @@ from repo_local_tools.agent_tools.manifest import (
 )
 
 
-def test_load_manifest_rejects_partially_invalid_string_lists(tmp_path: Path) -> None:
-    manifest_path = tmp_path / MANIFEST_PATH
-    manifest_path.parent.mkdir(parents=True)
+@pytest.fixture
+def manifest_path(tmp_path: Path) -> Path:
+    path = tmp_path / MANIFEST_PATH
+    path.parent.mkdir(parents=True)
+    return path
+
+
+def test_load_manifest_rejects_partially_invalid_string_lists(
+    tmp_path: Path,
+    manifest_path: Path,
+) -> None:
     manifest_path.write_text(
         json.dumps(
             {
@@ -40,9 +48,10 @@ def test_load_manifest_rejects_partially_invalid_string_lists(tmp_path: Path) ->
         load_manifest(tmp_path)
 
 
-def test_load_manifest_rejects_malformed_json(tmp_path: Path) -> None:
-    manifest_path = tmp_path / MANIFEST_PATH
-    manifest_path.parent.mkdir(parents=True)
+def test_load_manifest_rejects_malformed_json(
+    tmp_path: Path,
+    manifest_path: Path,
+) -> None:
     manifest_path.write_text("{")
 
     expected_message = re.escape(f"Invalid manifest JSON in {manifest_path}")
@@ -50,30 +59,26 @@ def test_load_manifest_rejects_malformed_json(tmp_path: Path) -> None:
         load_manifest(tmp_path)
 
 
-def test_load_manifest_rejects_non_object_manifest(tmp_path: Path) -> None:
-    manifest_path = tmp_path / MANIFEST_PATH
-    manifest_path.parent.mkdir(parents=True)
-    manifest_path.write_text("[]")
+@pytest.mark.parametrize(
+    ("content", "expected_error"),
+    [
+        ("[]", "expected top-level object"),
+        (json.dumps({"mcps": [], "skills": {}}), "Invalid manifest section 'mcps'"),
+        (
+            json.dumps({"mcps": {"echo": []}, "skills": {}}),
+            "Invalid manifest record 'echo'",
+        ),
+    ],
+)
+def test_load_manifest_rejects_invalid_shapes(
+    tmp_path: Path,
+    manifest_path: Path,
+    content: str,
+    expected_error: str,
+) -> None:
+    manifest_path.write_text(content)
 
-    with pytest.raises(ManifestError, match="expected top-level object"):
-        load_manifest(tmp_path)
-
-
-def test_load_manifest_rejects_invalid_sections(tmp_path: Path) -> None:
-    manifest_path = tmp_path / MANIFEST_PATH
-    manifest_path.parent.mkdir(parents=True)
-    manifest_path.write_text(json.dumps({"mcps": [], "skills": {}}))
-
-    with pytest.raises(ManifestError, match="Invalid manifest section 'mcps'"):
-        load_manifest(tmp_path)
-
-
-def test_load_manifest_rejects_malformed_records(tmp_path: Path) -> None:
-    manifest_path = tmp_path / MANIFEST_PATH
-    manifest_path.parent.mkdir(parents=True)
-    manifest_path.write_text(json.dumps({"mcps": {"echo": []}, "skills": {}}))
-
-    with pytest.raises(ManifestError, match="Invalid manifest record 'echo'"):
+    with pytest.raises(ManifestError, match=expected_error):
         load_manifest(tmp_path)
 
 
