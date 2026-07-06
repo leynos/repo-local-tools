@@ -26,7 +26,7 @@ WORKFLOW_PATH = (
 #: The pinned commit of leynos/shared-actions carrying the
 #: mutation-mutmut reusable workflow. Bump deliberately, never widen to
 #: a branch or tag.
-PINNED_SHA = "47aea18960d24f33aedc4782ec6b73e365418313"
+PINNED_SHA = "2b09d10192627fd6e1034e7c12625dd266b45503"
 
 EXPECTED_USES = (
     "leynos/shared-actions/.github/workflows/mutation-mutmut.yml@" + PINNED_SHA
@@ -34,10 +34,12 @@ EXPECTED_USES = (
 
 #: The exact caller configuration for this repository: flat package
 #: layout, so change detection watches repo_local_tools/ and no src/
-#: prefix is stripped during module-glob translation.
+#: prefix is stripped during module-glob translation. The runner Python
+#: matches pyproject's requires-python (>= 3.14).
 EXPECTED_WITH = {
     "paths": "repo_local_tools/",
     "module-prefix-strip": "",
+    "python-version": "3.14",
 }
 
 
