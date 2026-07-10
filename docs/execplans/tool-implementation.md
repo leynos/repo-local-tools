@@ -507,7 +507,7 @@ If it refuses to commit, it must leave the index as it found it or clearly
 state which paths it staged before failure. The preferred implementation is to
 compute and validate the owned path set before staging anything.
 
-## Artifacts and notes
+## Artefacts and notes
 
 Initial repository observations:
 
