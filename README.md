@@ -97,3 +97,7 @@ ______________________________________________________________________
 
 Contributions are welcome. Please see [AGENTS.md](AGENTS.md) for repository
 workflow, quality gate, and commit guidance.
+
+Run `make spelling` to refresh the shared en-GB-oxendict dictionary into an
+untracked local cache, merge `typos.local.toml`, regenerate `typos.toml`, and
+check maintained Markdown with the pinned `typos` release.
