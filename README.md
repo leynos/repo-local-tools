@@ -1,5 +1,8 @@
 # repo-local-tools
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](
+https://deepwiki.com/leynos/repo-local-tools)
+
 *Repository-local setup for agent tools, without the copy-paste ceremony.*
 
 `repo-local-tools` installs shared Model Context Protocol (MCP) server
