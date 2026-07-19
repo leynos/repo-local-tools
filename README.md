@@ -83,6 +83,8 @@ ______________________________________________________________________
 ## Learn more
 
 - [Users' guide](docs/users-guide.md) — complete usage documentation.
+- [Developers' guide](docs/developers-guide.md) — internals, testing strategy,
+  and maintenance workflows.
 - [Definition format](docs/agent-tool-definition-format.md) — source syntax for
   MCP servers and skills.
 - [ExecPlan](docs/execplans/tool-implementation.md) — implementation plan,
