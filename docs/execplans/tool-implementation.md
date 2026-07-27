@@ -1,7 +1,7 @@
 # Implement agent tool management command-line interface (CLI)
 
 This ExecPlan (execution plan) is a living document. The sections `Constraints`,
- `Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
+`Tolerances`, `Risks`, `Progress`, `Surprises & Discoveries`, `Decision Log`,
 and `Outcomes & Retrospective` must be kept up to date as work proceeds.
 
 Status: COMPLETE
@@ -457,8 +457,7 @@ Required tests:
 - `pytest-bdd` behavioural tests cover command-line scenarios for install,
   update, and commit flows for both MCP servers and skills.
 - Importing `repo_local_tools.cli` succeeds, and Cyclopts registers the `mcp`
-  and
-  `skill` command groups.
+  and `skill` command groups.
 - `repo-local-tools mcp install example` reads
   `$XDG_DATA_HOME/repo-local-tools/mcp-servers/example.toml` or the selected
   schema equivalent and writes the expected repo-local client files.
