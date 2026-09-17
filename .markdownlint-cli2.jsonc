@@ -19,6 +19,9 @@
     ".uv-cache/**",
     "CRUSH.md",
     ".vtcode/**",
-    "memories/**"
+    "memories/**",
+    "build/**",
+    "dist/**",
+    "docs/_build/**"
   ]
 }
