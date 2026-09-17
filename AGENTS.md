@@ -181,6 +181,11 @@ as a test assertion on the SHA string.
   generated configuration by hand.
 - Run `make fmt` after any documentation changes to format all Markdown
   files and fix table markup.
+- `make fmt` and `make check-fmt` run `mdtablefix` (version 0.6.0, the same
+  release CI installs); install it once with
+  `cargo install --locked mdtablefix --version 0.6.0`. `make fmt` also runs
+  `markdownlint-cli2`, which CI provides through its GitHub action; locally
+  install it with `bun install -g markdownlint-cli2` (or `npm install -g`).
 - Validate Mermaid diagrams in Markdown files by running `make nixie`.
 - Markdown paragraphs and bullet points must be wrapped at 80 columns.
 - Code blocks must be wrapped at 120 columns.

@@ -17,6 +17,11 @@
     "**/target/**",
     ".terraform/**",
     ".uv-cache/**",
-    "CRUSH.md"
+    "CRUSH.md",
+    ".vtcode/**",
+    "memories/**",
+    "build/**",
+    "dist/**",
+    "docs/_build/**"
   ]
 }
