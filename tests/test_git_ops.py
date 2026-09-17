@@ -40,7 +40,7 @@ def test_commit_managed_tool_commits_owned_paths(repo_with_xdg: RepoWithXdg) -> 
 
     commit_managed_tool(repository, "mcps", "echo")
 
-    result = subprocess.run(  # noqa: S603, RUF100
+    result = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
         cwd=repository,
         check=True,
@@ -78,7 +78,7 @@ def test_commit_managed_tool_commits_skill_paths(repo_with_xdg: RepoWithXdg) -> 
 
     commit_managed_tool(repository, "skills", "greeter")
 
-    result = subprocess.run(  # noqa: S603, RUF100
+    result = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
         cwd=repository,
         check=True,

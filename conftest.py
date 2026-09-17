@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import subprocess  # noqa: S404
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
 import typing as typ
 
 if typ.TYPE_CHECKING:
@@ -13,16 +13,16 @@ GIT_EXECUTABLE = "git"
 
 def initialize_git(repository: Path) -> None:
     """Initialise a test Git repository with deterministic author metadata."""
-    subprocess.run(  # noqa: S603
+    subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
         [GIT_EXECUTABLE, "init"], cwd=repository, check=True, capture_output=True
     )
-    subprocess.run(  # noqa: S603
+    subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
         [GIT_EXECUTABLE, "config", "user.email", "tests@example.invalid"],
         cwd=repository,
         check=True,
         capture_output=True,
     )
-    subprocess.run(  # noqa: S603
+    subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
         [GIT_EXECUTABLE, "config", "user.name", "Repo Local Tools Tests"],
         cwd=repository,
         check=True,
