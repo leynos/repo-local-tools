@@ -101,6 +101,11 @@ ______________________________________________________________________
 Contributions are welcome. Please see [AGENTS.md](AGENTS.md) for repository
 workflow, quality gate, and commit guidance.
 
+Pull-request CI measures serial package coverage against the ratchet baseline
+written by `coverage-main.yml`; it does not receive a CodeScene token or upload
+coverage. The main-only workflow advances that same baseline after a merge and
+publishes the resulting Cobertura report to CodeScene.
+
 Run `make spelling` to refresh the shared en-GB-oxendict dictionary into an
 untracked local cache, merge `typos.local.toml`, regenerate `typos.toml`, and
 check maintained Markdown with the pinned `typos` release.

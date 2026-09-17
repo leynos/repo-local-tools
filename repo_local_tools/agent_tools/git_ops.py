@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import shutil
-import subprocess  # noqa: S404
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
 import tempfile
 from pathlib import Path
 
@@ -39,7 +39,7 @@ def commit_managed_tool(repository: Path, kind: str, name: str) -> None:
         "Update" if _has_tracked_owned_path(repository, record.files) else "Install"
     )
     _run_git(repository, "add", "-f", "--", *sorted(allowed_paths))
-    staged = subprocess.run(  # noqa: S603
+    staged = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
         [GIT_EXECUTABLE, "diff", "--cached", "--quiet"],
         cwd=repository,
         check=False,
@@ -90,7 +90,7 @@ def _is_allowed(path: str, allowed_paths: set[str]) -> bool:
 
 def _has_tracked_owned_path(repository: Path, files: tuple[str, ...]) -> bool:
     for path in files:
-        result = subprocess.run(  # noqa: S603
+        result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
             [GIT_EXECUTABLE, "ls-files", "--error-unmatch", path],
             cwd=repository,
             check=False,
@@ -132,7 +132,7 @@ def _tool_noun(kind: str) -> str:
 
 
 def _run_git(repository: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true]
         [GIT_EXECUTABLE, *args],
         cwd=repository,
         check=False,

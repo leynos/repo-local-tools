@@ -80,7 +80,7 @@ def _mutation_job(workflow: dict[object, object]) -> dict[object, object]:
     jobs = _as_mapping(workflow.get("jobs"), "the workflow must declare jobs")
     assert jobs, "the workflow must declare at least one job"
     assert list(jobs) == ["mutation"], (
-        f"expected a single job named 'mutation', found {sorted(jobs)}"
+        f"expected a single job named 'mutation', found {list(jobs)}"
     )
     return _as_mapping(jobs["mutation"], "jobs.mutation must be a mapping")
 
