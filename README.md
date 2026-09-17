@@ -109,3 +109,9 @@ boundary and the workflow contract that holds it.
 Run `make spelling` to refresh the shared en-GB-oxendict dictionary into an
 untracked local cache, merge `typos.local.toml`, regenerate `typos.toml`, and
 check maintained Markdown with the pinned `typos` release.
+
+`make fmt` and `make check-fmt` run `mdtablefix` (version 0.6.0, the same
+release CI installs); install it once with
+`cargo install --locked mdtablefix --version 0.6.0`. `make fmt` also runs
+`markdownlint-cli2`, which CI provides through its GitHub action; locally
+install it with `bun install -g markdownlint-cli2` (or `npm install -g`).

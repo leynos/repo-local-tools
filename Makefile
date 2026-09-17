@@ -8,7 +8,7 @@ MDTABLEFIX ?= mdtablefix
 MDTABLEFIX_SELECT = --git --include-untracked
 MDTABLEFIX_RULES = --wrap --renumber --breaks --ellipsis --fences
 NIXIE ?= nixie
-TOOLS = ruff ty $(MDLINT) uv
+TOOLS = ruff ty $(MDLINT) $(MDTABLEFIX) uv
 VENV_TOOLS = pytest
 UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
 # The CV-005 CodeScene contracts live in shared-actions and run from a full
@@ -69,13 +69,13 @@ $(VENV_TOOLS): ## Verify required CLI tools in venv
 	$(call ensure_tool_venv,$@)
 endif
 
-fmt: ruff ## Format sources
+fmt: ruff $(MDTABLEFIX) $(MDLINT) ## Format sources
 	ruff format
 	ruff check --select I --fix
 	$(MDTABLEFIX) --in-place $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
 	$(MDLINT) --fix "**/*.md"
 
-check-fmt: ruff ## Verify formatting
+check-fmt: ruff $(MDTABLEFIX) ## Verify formatting
 	ruff format --check
 	$(MDTABLEFIX) --check $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
 
