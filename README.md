@@ -101,24 +101,10 @@ ______________________________________________________________________
 Contributions are welcome. Please see [AGENTS.md](AGENTS.md) for repository
 workflow, quality gate, and commit guidance.
 
-Pull-request CI measures serial package coverage against the ratchet baseline
-written by `coverage-main.yml` and publishes no coverage artefact. Nothing a
-pull request runs invokes CodeScene, runs `cs-coverage`, receives
-`CS_ACCESS_TOKEN`, or names the CodeScene host. `coverage-main.yml` is the
-single publisher: it advances the baseline after a merge and uploads the
-Cobertura report with `mode: upload`, binding the token on its upload step
-alone and guarding that step on the token and `refs/heads/main`. Its
-concurrency group is keyed on the ref and the event and never cancels, so the
-newest baseline wins and a dispatch cannot displace a pending push to main.
-
-`tests/test_codescene_coverage_contract.py` holds that shape, and
-`tests/test_codescene_closure_cases.py` and
-`tests/test_codescene_publisher_cases.py` show each clause catching the breach
-it names. The readings live in `tests/helpers/`: `workflow_reading.py` and
-`workflow_closure.py` know nothing about CodeScene and may serve any workflow
-contract here; `codescene_reach.py` and `codescene_publisher.py` hold the
-CodeScene clauses. They are test support only; nothing under
-`repo_local_tools/` may import them.
+Coverage is measured on pull requests against a ratchet baseline that only the
+push-to-main workflow publishes; see the
+[developers' guide](docs/developers-guide.md#coverage-publication) for that
+boundary and the workflow contract that holds it.
 
 Run `make spelling` to refresh the shared en-GB-oxendict dictionary into an
 untracked local cache, merge `typos.local.toml`, regenerate `typos.toml`, and
