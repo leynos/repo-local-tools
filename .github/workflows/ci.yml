@@ -43,11 +43,14 @@ jobs:
       - name: Run typechecker
         run: make typecheck
 
-      # Pull requests compare against the main-owned ratchet locally. CodeScene
-      # publication is intentionally isolated in coverage-main.yml.
+      # Coverage runs on pull requests only, ratcheting against the
+      # baseline coverage-main.yml writes on pushes to main; that workflow
+      # is also the only one that uploads to CodeScene. Nothing here
+      # publishes the report. The source scope keeps the package set the
+      # earlier Slipcover step measured.
       - name: Generate coverage
         if: github.event_name == 'pull_request'
-        uses: leynos/shared-actions/.github/actions/generate-coverage@152d9c4784d0ae5877938a984fe6d1f04d718fd8
+        uses: leynos/shared-actions/.github/actions/generate-coverage@dbe2e22ceaf498d85512679ccded38be9dbe7777
         with:
           language: python
           output-path: coverage.xml
@@ -55,3 +58,4 @@ jobs:
           python-source: ./repo_local_tools
           pytest-workers: ''
           with-ratchet: 'true'
+          publish-artefact: 'false'
