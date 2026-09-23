@@ -108,8 +108,8 @@ pull request runs invokes CodeScene, runs `cs-coverage`, receives
 single publisher: it advances the baseline after a merge and uploads the
 Cobertura report with `mode: upload`, binding the token on its upload step
 alone and guarding that step on the token and `refs/heads/main`. Its
-concurrency group is keyed on the ref and never cancels, so the newest baseline
-wins and a dispatch from another branch cannot displace a pending main run.
+concurrency group is keyed on the ref and the event and never cancels, so the
+newest baseline wins and a dispatch cannot displace a pending push to main.
 
 `tests/test_codescene_coverage_contract.py` holds that shape, and
 `tests/test_codescene_closure_cases.py` and
