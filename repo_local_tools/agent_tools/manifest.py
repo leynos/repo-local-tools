@@ -36,7 +36,7 @@ class Manifest:
         """Return records for a manifest kind."""
         if kind == "mcps":
             return self.mcps
-        elif kind == "skills":  # ruff: ignore[superfluous-else-return]
+        if kind == "skills":
             return self.skills
         msg = f"unknown manifest kind: {kind}"
         raise ValueError(msg)
