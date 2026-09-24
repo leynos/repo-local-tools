@@ -101,6 +101,11 @@ ______________________________________________________________________
 Contributions are welcome. Please see [AGENTS.md](AGENTS.md) for repository
 workflow, quality gate, and commit guidance.
 
+Coverage is measured on pull requests against a ratchet baseline that only the
+push-to-main workflow publishes; see the
+[developers' guide](docs/developers-guide.md#coverage-publication) for that
+boundary and the workflow contract that holds it.
+
 Run `make spelling` to refresh the shared en-GB-oxendict dictionary into an
 untracked local cache, merge `typos.local.toml`, regenerate `typos.toml`, and
 check maintained Markdown with the pinned `typos` release.

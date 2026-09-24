@@ -1,0 +1,78 @@
+name: Coverage (main)
+
+# The single CodeScene publisher. CodeScene accepts `cs-coverage upload`
+# only for analysed branches, so main's coverage is uploaded here on
+# push. Pull requests generate coverage with the ratchet this workflow
+# advances, and nothing a pull request runs receives CodeScene
+# credentials or contacts CodeScene.
+# tests/test_codescene_coverage_contract.py holds the shape.
+#
+# workflow_dispatch stays because merges made by the automerge workflow's
+# GITHUB_TOKEN do not fire push-event workflows. A dispatch can aim at any
+# branch, which is why the upload step is guarded on the ref as well as
+# the token.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One publisher run per ref at a time, never cancelled. GitHub keeps one
+# pending run per group, so a newer push replaces an older pending run
+# and never interrupts a running one; the newest baseline wins. A
+# cancelled run would abandon both its upload and its ratchet baseline
+# write. The group is keyed on the ref alone: a branch dispatch cannot
+# displace a pending main run, and with one group for main, runs never
+# overlap and the newest triggered run's coverage lands last. A manual
+# re-run of an older run is an operator action that republishes that
+# commit's coverage and baseline until the next push. A dispatch that
+# replaces a pending push leaves the ratchet baseline one commit behind
+# until the next push, because only a push saves it.
+concurrency:
+  group: coverage-main-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  coverage-upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.13'
+
+      - name: Generate coverage
+        uses: leynos/shared-actions/.github/actions/generate-coverage@dbe2e22ceaf498d85512679ccded38be9dbe7777
+        with:
+          language: python
+          output-path: coverage.xml
+          format: cobertura
+          python-source: ./repo_local_tools
+          pytest-workers: ''
+          with-ratchet: 'true'
+
+      # Whether the token is set, as a plain output. The expression is
+      # evaluated before the shell runs, so this step binds nothing: the
+      # token is in no step's env, because the upload action is composite
+      # and passes its step env to nested upload-artifact and cache steps.
+      - name: Check CodeScene token
+        id: codescene-token
+        run: echo "available=${{ secrets.CS_ACCESS_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload coverage data to CodeScene
+        if: >-
+          steps.codescene-token.outputs.available == 'true'
+          && github.ref == 'refs/heads/main'
+        uses: leynos/shared-actions/.github/actions/upload-codescene-coverage@dbe2e22ceaf498d85512679ccded38be9dbe7777
+        with:
+          format: cobertura
+          path: coverage.xml
+          mode: upload
+          access-token: ${{ secrets.CS_ACCESS_TOKEN }}
+          # No checksum input: the action pins the CLI through its own
+          # manifest, and `installer-checksum` is rejected from this pin.
