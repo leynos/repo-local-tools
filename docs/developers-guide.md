@@ -38,16 +38,20 @@ fork cannot read the token anyway. The ratchet applies the same gate from this
 repository's own baseline.
 
 Both coverage lanes set up Python 3.14 with `actions/setup-python`, inside the
-project's `requires-python` (`>=3.14`). generate-coverage builds the coverage
-environment on the Python the job put on `PATH` unless the job names one, and
-`uv sync` refuses an interpreter outside `requires-python`. Each `setup-python`
-step replaces the Python on `PATH` for the steps after it, so a coverage call
-measures on the most recent setup before it in its own job.
-`tests/test_coverage_python_version.py` requires every generate-coverage call
-to follow, in its job, a `setup-python` step naming a version inside
-`requires-python`, and every call in both lanes to measure on that one version,
-because the pull-request ratchet is only meaningful against a baseline measured
-on the same Python. It compares versions with `packaging`, a development
+project's `requires-python` (`>=3.14`). generate-coverage chooses its
+interpreter from its `python-version` input, then `UV_PYTHON`, then
+`.python-version`, then the `python3` on `PATH`, which is the most recent
+`setup-python` step before the call in its job; `uv sync` refuses an interpreter
+outside `requires-python`. `tests/test_coverage_python_version.py`, with its
+reader in `tests/coverage_python_sources.py`, requires every generate-coverage
+call in the pull-request lane and the publisher to declare at least one of those
+sources, every declared source to name the same version, that version to be
+inside `requires-python`, and both lanes to measure on that one version. A
+`setup-python` step guarded by `if:` or allowed to fail with `continue-on-error`
+declares nothing. The ratchet baseline key already carries the interpreter
+(`ratchet-baseline-<os>-py<major.minor>-`), so a lane on another Python would
+miss its baseline rather than compare against the wrong one; the contract turns
+that silent restart into a failure. It uses `packaging`, a development
 dependency.
 
 ### Workflow contract helpers
