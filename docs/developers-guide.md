@@ -43,8 +43,10 @@ environment on the Python the job put on `PATH` unless the job names one, and
 `uv sync` refuses an interpreter outside `requires-python`. So
 `tests/test_coverage_python_version.py` requires every job that runs
 generate-coverage to set Python up before that step, in the same job, and only
-with versions inside `requires-python`. It compares versions with `packaging`,
-a development dependency.
+with versions inside `requires-python`, and every such job in both lanes to
+set up the same version, because the pull-request ratchet is only meaningful
+against a baseline measured on the same Python. It compares versions with
+`packaging`, a development dependency.
 
 ### Workflow contract helpers
 
