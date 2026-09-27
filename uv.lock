@@ -309,6 +309,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "packaging" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-bdd" },
@@ -324,6 +325,7 @@ requires-dist = [{ name = "cyclopts" }]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "packaging", specifier = ">=26.2" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-bdd" },

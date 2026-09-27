@@ -37,6 +37,19 @@ whose answers have changed shape and failed every pull request at once, and a
 fork cannot read the token anyway. The ratchet applies the same gate from this
 repository's own baseline.
 
+Both coverage lanes set up Python 3.14 with `actions/setup-python`, inside the
+project's `requires-python` (`>=3.14`). generate-coverage builds the coverage
+environment on the Python the job put on `PATH` unless the job names one, and
+`uv sync` refuses an interpreter outside `requires-python`. Each `setup-python`
+step replaces the Python on `PATH` for the steps after it, so a coverage call
+measures on the most recent setup before it in its own job.
+`tests/test_coverage_python_version.py` requires every generate-coverage call
+to follow, in its job, a `setup-python` step naming a version inside
+`requires-python`, and every call in both lanes to measure on that one version,
+because the pull-request ratchet is only meaningful against a baseline measured
+on the same Python. It compares versions with `packaging`, a development
+dependency.
+
 ### Workflow contract helpers
 
 `tests/test_codescene_coverage_contract.py` holds the rule over this
