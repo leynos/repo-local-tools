@@ -1,1 +1,12 @@
 repository = "leynos/repo-local-tools"
+
+# What the publisher's ratcheting generator measures, exactly. The shared rules
+# hold every lane equal to the publisher; this pins the publisher's own value,
+# so a change made to both at once is still a reviewed change.
+[selection]
+language = "python"
+output-path = "coverage.xml"
+format = "cobertura"
+python-source = "./repo_local_tools"
+pytest-workers = ""
+with-ratchet = "true"

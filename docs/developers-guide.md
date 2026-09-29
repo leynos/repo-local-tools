@@ -64,5 +64,6 @@ the Makefile; a fix to the rules is a pin bump. The library reads workflows
 with a loader that refuses duplicate keys, follows the pull-request surface
 through local `./` and `$/` calls and composite actions, and drives every
 clause against breaching fixtures in its own suite, so this repository keeps no
-copy of the readers. The repository's only parameter is `repository` in
-`.github/cv005.toml`.
+copy of the readers. The repository's parameters are in `.github/cv005.toml`:
+`repository`, and the publisher's exact `[selection]`, so a change made to the
+generators and the uploader together is still a reviewed change.
