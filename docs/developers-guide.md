@@ -41,39 +41,28 @@ Both coverage lanes set up Python 3.14 with `actions/setup-python`, inside the
 project's `requires-python` (`>=3.14`). generate-coverage chooses its
 interpreter from its `python-version` input, then `UV_PYTHON`, then
 `.python-version`, then the `python3` on `PATH`, which is the most recent
-`setup-python` step before the call in its job; `uv sync` refuses an interpreter
-outside `requires-python`. `tests/test_coverage_python_version.py`, with its
-reader in `tests/coverage_python_sources.py`, requires every generate-coverage
-call in the pull-request lane and the publisher to declare at least one of those
-sources, every declared source to name the same version, that version to be
-inside `requires-python`, and both lanes to measure on that one version. A
-`setup-python` step guarded by `if:` or allowed to fail with `continue-on-error`
-declares nothing. The ratchet baseline key already carries the interpreter
-(`ratchet-baseline-<os>-py<major.minor>-`), so a lane on another Python would
-miss its baseline rather than compare against the wrong one; the contract turns
-that silent restart into a failure. It uses `packaging`, a development
-dependency.
+`setup-python` step before the call in its job; `uv sync` refuses an
+interpreter outside `requires-python`. `tests/test_coverage_python_version.py`,
+with its reader in `tests/coverage_python_sources.py`, requires every
+generate-coverage call in the pull-request lane and the publisher to declare at
+least one of those sources, every declared source to name the same version,
+that version to be inside `requires-python`, and both lanes to measure on that
+one version. A `setup-python` step guarded by `if:` or allowed to fail with
+`continue-on-error` declares nothing. The ratchet baseline key already carries
+the interpreter (`ratchet-baseline-<os>-py<major.minor>-`), so a lane on
+another Python would miss its baseline rather than compare against the wrong
+one; the contract turns that silent restart into a failure. It uses
+`packaging`, a development dependency.
 
-### Workflow contract helpers
+### Workflow contracts
 
-`tests/test_codescene_coverage_contract.py` holds the rule over this
-repository's workflows. `tests/test_codescene_closure_cases.py` and
-`tests/test_codescene_publisher_cases.py` drive the same readings over
-constructed documents, one breach each, so every clause is shown to catch what
-it names. The readings live in `tests/helpers/`:
-
-- `workflow_reading.py` parses workflows and local actions with a loader that
-  refuses duplicate keys, reads `on:` in scalar, sequence, and mapping form
-  under either key, and walks every key and value of a document.
-- `workflow_closure.py` computes the pull-request surface: workflows triggered
-  by `pull_request`, `pull_request_target`, `pull_request_review`,
-  `pull_request_review_comment`, `merge_group`, `issue_comment`, or
-  `workflow_run`, or by a push to any branch other than `main`, and every local
-  workflow or composite action they reach through `./` or `$/` references. It
-  refuses qualified self-calls and local references carrying `@ref`.
-- `codescene_reach.py`, `codescene_publisher.py`, and `codescene_binding.py`
-  hold the CodeScene clauses.
-
-The two generic modules know nothing about CodeScene and may be reused by any
-workflow contract in this repository. They are test support only: nothing under
-`repo_local_tools/` may import them.
+`make test-workflow-contracts`, which `ci.yml` runs as its own step, holds the
+CodeScene coverage shape over this repository's workflows and local actions by
+running `cv005-contracts check`, the shared contract library in
+`leynos/shared-actions`, from the full commit named by `CV005_CONTRACTS_REF` in
+the Makefile; a fix to the rules is a pin bump. The library reads workflows
+with a loader that refuses duplicate keys, follows the pull-request surface
+through local `./` and `$/` calls and composite actions, and drives every
+clause against breaching fixtures in its own suite, so this repository keeps no
+copy of the readers. The repository's only parameter is `repository` in
+`.github/cv005.toml`.

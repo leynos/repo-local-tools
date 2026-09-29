@@ -4,10 +4,17 @@ MDFORMAT_ALL ?= mdformat-all
 TOOLS = $(MDFORMAT_ALL) ruff ty $(MDLINT) uv
 VENV_TOOLS = pytest
 UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
+# The CV-005 CodeScene contracts live in shared-actions and run from a full
+# commit, so a fix is a pin bump. `.github/cv005.toml` holds this repository's
+# only parameters.
+CV005_CONTRACTS_REF ?= a38feb9be25755c30eca5bda96bd3786a5b89c6b
+CV005_CONTRACTS = $(UV_ENV) uv tool run --python 3.13 \
+	--from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' \
+	cv005-contracts
 PYTHON_TARGETS ?= repo_local_tools tests
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
-        markdownlint spelling nixie test typecheck $(TOOLS) $(VENV_TOOLS)
+        markdownlint spelling nixie test test-workflow-contracts typecheck $(TOOLS) $(VENV_TOOLS)
 
 .DEFAULT_GOAL := all
 
@@ -89,6 +96,9 @@ nixie: ## Validate Mermaid diagrams
 
 test: build uv $(VENV_TOOLS) ## Run tests
 	$(UV_ENV) uv run pytest -v -n auto
+
+test-workflow-contracts: uv ## Run the shared CV-005 CodeScene contracts
+	$(CV005_CONTRACTS) check --repository .
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | \
