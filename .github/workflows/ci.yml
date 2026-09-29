@@ -8,6 +8,8 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v4
@@ -43,6 +45,9 @@ jobs:
       - name: Run typechecker
         run: make typecheck
 
+      - name: Check the CV-005 contracts
+        run: make test-workflow-contracts
+
       # Coverage runs on pull requests only, ratcheting against the
       # baseline coverage-main.yml writes on pushes to main; that workflow
       # is also the only one that uploads to CodeScene. Nothing here
@@ -50,7 +55,7 @@ jobs:
       # earlier Slipcover step measured.
       - name: Generate coverage
         if: github.event_name == 'pull_request'
-        uses: leynos/shared-actions/.github/actions/generate-coverage@4fb8eb7ad52454678a0662865d81d3cd17aa6e0e
+        uses: leynos/shared-actions/.github/actions/generate-coverage@774cc5a01e457714aede66e14a97b3e257812fc2
         with:
           language: python
           output-path: coverage.xml
