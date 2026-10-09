@@ -185,7 +185,8 @@ as a test assertion on the SHA string.
   release CI installs); install it once with
   `cargo install --locked mdtablefix --version 0.6.1`. `make fmt` also runs
   `markdownlint-cli2`, which CI provides through its GitHub action; locally
-  install it with `bun install -g markdownlint-cli2` (or `npm install -g`).
+  install it with `bun install -g markdownlint-cli2` (or
+  `npm install -g markdownlint-cli2`).
 - Validate Mermaid diagrams in Markdown files by running `make nixie`.
 - Markdown paragraphs and bullet points must be wrapped at 80 columns.
 - Code blocks must be wrapped at 120 columns.
