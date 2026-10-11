@@ -144,7 +144,7 @@ source_paths = ["repo_local_tools/"]
 pytest_add_cli_args_test_selection = ["tests/"]
 # The suite relies on the root conftest.py helpers; mutmut only copies
 # tests/ and packaging metadata into its mutants/ working copy.
-also_copy = ["conftest.py", "scripts/uv_gate.py"]
+also_copy = ["conftest.py", "scripts/uv_gate.py", "Makefile"]
 # cli.py is exercised solely via subprocess (`python -m
 # repo_local_tools.cli`), which is invisible to mutmut's in-process
 # attribution and would yield permanent unattributable survivors.
