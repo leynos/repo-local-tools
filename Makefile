@@ -1,3 +1,7 @@
+# Every uv call goes through the vendored helper, which cleans the environment,
+# uses the global uv cache, runs offline first and goes online at most once. See
+# https://github.com/leynos/shared-actions/tree/main/uv_gate for the contract.
+UV_GATE ?= python3 scripts/uv_gate.py
 MDLINT ?= markdownlint-cli2
 # `make fmt` and `make check-fmt` call mdtablefix directly. `--git` selects the
 # Markdown files Git tracks and `--include-untracked` adds the untracked files
@@ -10,14 +14,11 @@ MDTABLEFIX_RULES = --wrap --renumber --breaks --ellipsis --fences
 NIXIE ?= nixie
 TOOLS = ruff ty $(MDLINT) $(MDTABLEFIX) uv
 VENV_TOOLS = pytest
-UV_ENV = UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
 # The CV-005 CodeScene contracts live in shared-actions and run from a full
 # commit, so a fix is a pin bump. `.github/cv005.toml` holds this repository's
 # only parameters.
 CV005_CONTRACTS_REF ?= a38feb9be25755c30eca5bda96bd3786a5b89c6b
-CV005_CONTRACTS = $(UV_ENV) uv tool run --python 3.13 \
-	--from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' \
-	cv005-contracts
+CV005_CONTRACTS = $(UV_GATE) tool --python 3.13 --from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' -- cv005-contracts
 PYTHON_TARGETS ?= repo_local_tools tests
 
 .PHONY: help all clean build build-release lint fmt check-fmt \
@@ -27,11 +28,8 @@ PYTHON_TARGETS ?= repo_local_tools tests
 
 all: build check-fmt lint typecheck test spelling
 
-.venv: pyproject.toml
-	$(UV_ENV) uv venv --clear
-
-build: uv .venv ## Build virtual-env and install deps
-	$(UV_ENV) uv sync --group dev
+build: uv ## Build virtual-env and install deps
+	$(UV_GATE) prepare --group dev
 
 build-release: ## Build artefacts (sdist & wheel)
 	python -m build --sdist --wheel
@@ -51,7 +49,7 @@ define ensure_tool
 endef
 
 define ensure_tool_venv
-	@$(UV_ENV) uv run which $(1) >/dev/null 2>&1 || { \
+	@$(UV_GATE) run -- which $(1) >/dev/null 2>&1 || { \
 	  printf "Error: '%s' is required in the virtualenv, but is not installed\n" "$(1)" >&2; \
 	  exit 1; \
 	}
@@ -91,10 +89,10 @@ markdownlint: $(MDLINT) ## Lint Markdown files
 	+$(MAKE) spelling
 
 TYPOS_VERSION ?= 1.48.0
-TYPOS := uv tool run typos@$(TYPOS_VERSION)
+TYPOS := $(UV_GATE) tool --from typos@$(TYPOS_VERSION) -- typos
 
 spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
-	uv run scripts/generate_typos_config.py
+	$(UV_GATE) run -- python scripts/generate_typos_config.py
 	find . -type f -name '*.md' -not -path './.venv/*' -print0 | \
 		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
 
@@ -103,7 +101,7 @@ nixie: ## Validate Mermaid diagrams
 	$(NIXIE) --no-sandbox
 
 test: build uv $(VENV_TOOLS) ## Run tests
-	$(UV_ENV) uv run pytest -v -n auto
+	$(UV_GATE) run -- pytest -v -n auto
 
 test-workflow-contracts: uv ## Run the shared CV-005 CodeScene contracts
 	$(CV005_CONTRACTS) check --repository .
