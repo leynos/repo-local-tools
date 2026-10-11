@@ -21,15 +21,17 @@ CV005_CONTRACTS_REF ?= a38feb9be25755c30eca5bda96bd3786a5b89c6b
 CV005_CONTRACTS = $(UV_GATE) tool --python 3.13 --from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' -- cv005-contracts
 PYTHON_TARGETS ?= repo_local_tools tests
 
-.PHONY: help all clean build build-release lint fmt check-fmt \
+.PHONY: prepare help all clean build build-release lint fmt check-fmt \
         markdownlint spelling nixie test test-workflow-contracts typecheck $(TOOLS) $(VENV_TOOLS)
+
+prepare: ## Install the locked development environment, offline first
+	$(UV_GATE) prepare --group dev
 
 .DEFAULT_GOAL := all
 
 all: build check-fmt lint typecheck test spelling
 
-build: uv ## Build virtual-env and install deps
-	$(UV_GATE) prepare --group dev
+build: uv prepare ## Build virtual-env and install deps
 
 build-release: ## Build artefacts (sdist & wheel)
 	python -m build --sdist --wheel
@@ -63,7 +65,7 @@ endif
 
 ifneq ($(strip $(VENV_TOOLS)),)
 .PHONY: $(VENV_TOOLS)
-$(VENV_TOOLS): ## Verify required CLI tools in venv
+$(VENV_TOOLS): prepare ## Verify required CLI tools in venv
 	$(call ensure_tool_venv,$@)
 endif
 
@@ -91,7 +93,7 @@ markdownlint: $(MDLINT) ## Lint Markdown files
 TYPOS_VERSION ?= 1.48.0
 TYPOS := $(UV_GATE) tool --from typos@$(TYPOS_VERSION) -- typos
 
-spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
+spelling: prepare ## Enforce en-GB-oxendict spelling in Markdown prose
 	$(UV_GATE) run -- python scripts/generate_typos_config.py
 	find . -type f -name '*.md' -not -path './.venv/*' -print0 | \
 		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
