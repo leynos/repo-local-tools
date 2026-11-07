@@ -1,3 +1,5 @@
+"""Tests for committing managed agent tool installs with Git."""
+
 from __future__ import annotations
 
 import subprocess
@@ -14,6 +16,7 @@ RepoWithXdg = tuple[Path, Path]
 
 @pytest.fixture
 def repo_with_xdg(tmp_path: Path) -> RepoWithXdg:
+    """Return an initialised Git repository and an XDG data home path."""
     repository = tmp_path / "repo"
     xdg_data_home = tmp_path / "xdg"
     repository.mkdir()
@@ -24,6 +27,7 @@ def repo_with_xdg(tmp_path: Path) -> RepoWithXdg:
 def test_commit_managed_tool_refuses_unrelated_changes(
     repo_with_xdg: RepoWithXdg,
 ) -> None:
+    """Refuse to commit a managed tool while unrelated changes are present."""
     repository, xdg_data_home = repo_with_xdg
     write_mcp_definition(xdg_data_home, "echo")
     install_mcp("echo", repository, xdg_data_home)
@@ -34,6 +38,7 @@ def test_commit_managed_tool_refuses_unrelated_changes(
 
 
 def test_commit_managed_tool_commits_owned_paths(repo_with_xdg: RepoWithXdg) -> None:
+    """Commit an installed MCP server with the expected commit subject."""
     repository, xdg_data_home = repo_with_xdg
     write_mcp_definition(xdg_data_home, "echo")
     install_mcp("echo", repository, xdg_data_home)
@@ -53,6 +58,7 @@ def test_commit_managed_tool_commits_owned_paths(repo_with_xdg: RepoWithXdg) -> 
 def test_commit_managed_tool_no_managed_changes_to_commit(
     repo_with_xdg: RepoWithXdg,
 ) -> None:
+    """Refuse a second commit when no managed changes remain to commit."""
     repository, xdg_data_home = repo_with_xdg
     write_mcp_definition(xdg_data_home, "echo")
     install_mcp("echo", repository, xdg_data_home)
@@ -65,6 +71,7 @@ def test_commit_managed_tool_no_managed_changes_to_commit(
 def test_commit_managed_tool_unknown_managed_tool_raises(
     repo_with_xdg: RepoWithXdg,
 ) -> None:
+    """Raise GitError when the named managed MCP server is unknown."""
     repository, _xdg_data_home = repo_with_xdg
 
     with pytest.raises(GitError, match="unknown managed MCP server"):
@@ -72,6 +79,7 @@ def test_commit_managed_tool_unknown_managed_tool_raises(
 
 
 def test_commit_managed_tool_commits_skill_paths(repo_with_xdg: RepoWithXdg) -> None:
+    """Commit an installed skill with the expected commit subject."""
     repository, xdg_data_home = repo_with_xdg
     write_skill_definition(xdg_data_home, "greeter")
     install_skill("greeter", repository, xdg_data_home)

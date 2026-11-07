@@ -21,6 +21,7 @@ if typ.TYPE_CHECKING:
 
 
 def test_load_directory_discovers_all_supported_sources(tmp_path: Path) -> None:
+    """Discover all supported sources under a directory and register them."""
     source = tmp_path / "workspace" / "project-skill"
     xdg_data_home = tmp_path / "xdg"
     source.mkdir(parents=True)
@@ -96,6 +97,7 @@ def test_load_directory_discovers_all_supported_sources(tmp_path: Path) -> None:
 
 
 def test_load_directory_rejects_duplicate_skill_results(tmp_path: Path) -> None:
+    """Reject duplicate skill names in one load without writing the registry."""
     source = tmp_path / "workspace" / "reviewer"
     xdg_data_home = tmp_path / "xdg"
     source.mkdir(parents=True)
@@ -114,6 +116,7 @@ def test_load_directory_rejects_duplicate_skill_results(tmp_path: Path) -> None:
 
 
 def test_load_directory_rejects_duplicate_mcp_results(tmp_path: Path) -> None:
+    """Reject duplicate MCP server names in one load without writing the registry."""
     source = tmp_path / "workspace"
     xdg_data_home = tmp_path / "xdg"
     source.mkdir()
@@ -131,6 +134,7 @@ def test_load_directory_rejects_duplicate_mcp_results(tmp_path: Path) -> None:
 
 
 def test_load_skill_archive_wraps_archive_error(tmp_path: Path) -> None:
+    """Wrap a corrupt skill archive error and keep the original as its cause."""
     archive = tmp_path / "corrupt.skill"
     archive.write_text("not a zip archive")
 
@@ -141,6 +145,7 @@ def test_load_skill_archive_wraps_archive_error(tmp_path: Path) -> None:
 
 
 def test_load_skill_directory_rejects_symlink_source(tmp_path: Path) -> None:
+    """Reject a skill source that is itself a symlink."""
     source = tmp_path / "source"
     source.mkdir()
     (source / "SKILL.md").write_text("Skill body.\n")
@@ -152,6 +157,7 @@ def test_load_skill_directory_rejects_symlink_source(tmp_path: Path) -> None:
 
 
 def test_load_skill_directory_rejects_nested_symlink(tmp_path: Path) -> None:
+    """Reject a skill directory that contains a nested symlink."""
     source = tmp_path / "source"
     outside = tmp_path / "outside.txt"
     source.mkdir()
@@ -164,6 +170,7 @@ def test_load_skill_directory_rejects_nested_symlink(tmp_path: Path) -> None:
 
 
 def test_load_skill_md_rejects_nested_symlink(tmp_path: Path) -> None:
+    """Reject a SKILL.md source whose parent directory has a nested symlink."""
     source = tmp_path / "source"
     outside = tmp_path / "outside.txt"
     source.mkdir()
@@ -178,6 +185,7 @@ def test_load_skill_md_rejects_nested_symlink(tmp_path: Path) -> None:
 def test_load_directory_rejects_symlink_candidate_before_writes(
     tmp_path: Path,
 ) -> None:
+    """Reject a workspace whose invalid candidate prevents any registry write."""
     workspace = tmp_path / "workspace"
     xdg_data_home = tmp_path / "xdg"
     valid = workspace / "skills" / "alpha"
@@ -200,6 +208,7 @@ def test_load_directory_rejects_symlink_candidate_before_writes(
 
 
 def test_load_skill_md_uses_frontmatter_name(tmp_path: Path) -> None:
+    """Name a loaded SKILL.md from its frontmatter rather than its directory."""
     source = tmp_path / "src"
     xdg_data_home = tmp_path / "xdg"
     source.mkdir()
@@ -225,6 +234,7 @@ def test_load_skill_md_uses_frontmatter_name(tmp_path: Path) -> None:
 
 
 def test_load_skill_md_rejects_ambiguous_directory_names(tmp_path: Path) -> None:
+    """Reject a SKILL.md without frontmatter, raising an invalid skill name error."""
     source = tmp_path / "skill"
     source.mkdir()
     (source / "SKILL.md").write_text("No frontmatter.\n")
@@ -234,6 +244,7 @@ def test_load_skill_md_rejects_ambiguous_directory_names(tmp_path: Path) -> None
 
 
 def test_load_mcp_json_rejects_non_string_environment(tmp_path: Path) -> None:
+    """Reject an MCP server whose env value is not a string."""
     source = tmp_path / "mcp.json"
     source.write_text(
         json.dumps(
@@ -253,6 +264,7 @@ def test_load_mcp_json_rejects_non_string_environment(tmp_path: Path) -> None:
 
 
 def test_load_mcp_json_wraps_json_decode_error(tmp_path: Path) -> None:
+    """Report a malformed mcp.json as a LoadError requiring valid JSON."""
     source = tmp_path / "mcp.json"
     source.write_text('{"mcpServers": ')
 
@@ -268,6 +280,7 @@ def test_load_mcp_json_rejects_unsafe_server_names(
     tmp_path: Path,
     name: str,
 ) -> None:
+    """Reject MCP server names with traversal, absolute, or separator characters."""
     source = tmp_path / "mcp.json"
     source.write_text(json.dumps({"mcpServers": {name: {"command": "python"}}}))
 
@@ -276,6 +289,7 @@ def test_load_mcp_json_rejects_unsafe_server_names(
 
 
 def test_load_mcp_json_file_loads_every_server(tmp_path: Path) -> None:
+    """Load every server in an mcp.json file as its own MCP definition."""
     source = tmp_path / "mcp.json"
     xdg_data_home = tmp_path / "xdg"
     source.write_text(
@@ -310,6 +324,7 @@ def test_load_mcp_json_snapshot(
     tmp_path: Path,
     snapshot: SnapshotAssertion,
 ) -> None:
+    """Match the generated TOML for an mcp.json server against its snapshot."""
     source = tmp_path / "mcpServers.json"
     xdg_data_home = tmp_path / "xdg"
     source.write_text(
