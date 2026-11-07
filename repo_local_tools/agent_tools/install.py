@@ -114,6 +114,7 @@ def _install_skill_archive(
     repository: Path,
     managed_name: str | None = None,
 ) -> InstallResult:
+    """Extract a `.skill` archive to a temporary directory and install it."""
     with tempfile.TemporaryDirectory() as temporary_directory:
         extracted = extract_skill_archive(
             archive_path, Path(temporary_directory) / "skill"
@@ -123,6 +124,7 @@ def _install_skill_archive(
 
 
 def _absolute_skill_archive(source: str) -> Path:
+    """Return the archive source as a Path, rejecting relative paths."""
     archive_path = Path(source)
     if archive_path.is_absolute():
         return archive_path
@@ -136,6 +138,7 @@ def _install_skill_directory(
     repository: Path,
     recorded_source: str,
 ) -> InstallResult:
+    """Copy a skill directory into each client and record it in the manifest."""
     if not source.exists() or not source.is_dir():
         msg = f"unknown skill source: {source}"
         raise InstallError(msg)

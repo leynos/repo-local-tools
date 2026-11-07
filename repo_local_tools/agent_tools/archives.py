@@ -46,6 +46,7 @@ def extract_skill_archive(archive_path: Path, extract_root: Path) -> Path:
 
 
 def _validated_parts(filename: str) -> tuple[str, ...]:
+    """Return the path parts of a safe archive entry, rejecting unsafe names."""
     path = PurePosixPath(filename)
     is_structurally_unsafe = path.is_absolute() or not path.parts
     has_parent_reference = ".." in path.parts

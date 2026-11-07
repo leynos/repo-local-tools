@@ -57,6 +57,7 @@ def commit_managed_tool(repository: Path, kind: str, name: str) -> None:
 
 
 def _record_for(records: dict[str, ToolRecord], kind: str, name: str) -> ToolRecord:
+    """Return the named managed record, or raise GitError if it is unknown."""
     record = records.get(name)
     if record is not None:
         return record
@@ -65,6 +66,10 @@ def _record_for(records: dict[str, ToolRecord], kind: str, name: str) -> ToolRec
 
 
 def _unrelated_changes(repository: Path, allowed_paths: set[str]) -> list[str]:
+    """List status path fragments outside the allowed set.
+
+    Fragments may remain quoted or be split incorrectly.
+    """
     result = _run_git(repository, "status", "--porcelain=v1", "--untracked-files=all")
     unrelated: list[str] = []
     for line in result.stdout.splitlines():
@@ -75,6 +80,10 @@ def _unrelated_changes(repository: Path, allowed_paths: set[str]) -> list[str]:
 
 
 def _status_path(line: str) -> str:
+    """Extract the status-line path fragment, splitting on " -> ".
+
+    Git quoting is not decoded.
+    """
     path = line[3:]
     if " -> " in path:
         return path.split(" -> ", maxsplit=1)[1]
@@ -82,6 +91,7 @@ def _status_path(line: str) -> str:
 
 
 def _is_allowed(path: str, allowed_paths: set[str]) -> bool:
+    """Return whether path equals, or sits under, an allowed path."""
     for allowed_path in allowed_paths:
         if path == allowed_path or path.startswith(f"{allowed_path}/"):
             return True
@@ -89,6 +99,7 @@ def _is_allowed(path: str, allowed_paths: set[str]) -> bool:
 
 
 def _has_tracked_owned_path(repository: Path, files: tuple[str, ...]) -> bool:
+    """Return whether Git tracks any of the owned files."""
     for path in files:
         result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true] - Git argv; the path is one argument, no shell.
             [GIT_EXECUTABLE, "ls-files", "--error-unmatch", path],
@@ -103,11 +114,13 @@ def _has_tracked_owned_path(repository: Path, files: tuple[str, ...]) -> bool:
 
 
 def _commit_subject(kind: str, name: str, action: str) -> str:
+    """Build the commit subject for a managed tool change."""
     noun = _tool_noun(kind)
     return f"{action} {noun} {name}"
 
 
 def _commit_body(kind: str, name: str, action: str) -> str:
+    """Build the commit body describing the managed file ownership change."""
     verb = "Update" if action == "Update" else "Add"
     noun = _tool_noun(kind)
     return (
@@ -128,10 +141,15 @@ def singularize_kind(kind: str) -> str:
 
 
 def _tool_noun(kind: str) -> str:
+    """Return the singular noun used in commit messages for a kind."""
     return singularize_kind(kind)
 
 
 def _run_git(repository: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run Git in repository; raise GitError on a non-zero exit status.
+
+    Other exceptions propagate.
+    """
     result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true] - Git argv built by callers, no shell.
         [GIT_EXECUTABLE, *args],
         cwd=repository,

@@ -179,6 +179,7 @@ def main() -> None:
 
 
 def _run_or_exit(action: cabc.Callable[[], object]) -> None:
+    """Run an action, exiting with status 1 on an agent-tools error."""
     try:
         action()
     except AgentToolsError as error:
@@ -187,12 +188,14 @@ def _run_or_exit(action: cabc.Callable[[], object]) -> None:
 
 
 def _load_source(source: str | None) -> Path | None:
+    """Convert an optional source string to a Path."""
     if source is None:
         return None
     return Path(source)
 
 
 def _print_load_results(results: list[LoadResult]) -> None:
+    """Print one line for each loaded result."""
     for result in results:
         print(f"Loaded {result.kind} {result.name} to {result.path}")
 
