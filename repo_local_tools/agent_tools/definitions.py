@@ -54,6 +54,7 @@ def load_mcp_definition(name: str, xdg_data_home: Path | None) -> McpDefinition:
 
 
 def _required_string(parsed: dict[str, object], key: str, source: Path) -> str:
+    """Return a non-empty string field, or raise DefinitionError."""
     value = parsed.get(key)
     if isinstance(value, str) and value:
         return value
@@ -66,6 +67,7 @@ def _optional_string_tuple(
     key: str,
     source: Path,
 ) -> tuple[str, ...]:
+    """Return an optional list field as a tuple of strings."""
     value = parsed.get(key, [])
     if not isinstance(value, list):
         msg = f"{source} field {key!r} must be a list of strings"
@@ -84,6 +86,7 @@ def _optional_string_mapping(
     key: str,
     source: Path,
 ) -> dict[str, str]:
+    """Return an optional table field as a mapping of strings."""
     value = parsed.get(key, {})
     if not isinstance(value, dict):
         msg = f"{source} field {key!r} must be a table of strings"

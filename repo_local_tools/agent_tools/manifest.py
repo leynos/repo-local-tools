@@ -78,6 +78,7 @@ def _manifest_section(
     key: str,
     manifest_path: Path,
 ) -> dict[object, object]:
+    """Return a named manifest section, or raise ManifestError if invalid."""
     value = parsed.get(key)
     if isinstance(value, dict):
         return typ.cast("dict[object, object]", value)
@@ -86,6 +87,7 @@ def _manifest_section(
 
 
 def _load_records(value: dict[object, object]) -> dict[str, ToolRecord]:
+    """Parse manifest records keyed by managed tool name."""
     records: dict[str, ToolRecord] = {}
     for name, record in value.items():
         if not isinstance(name, str):
@@ -108,6 +110,7 @@ def _load_records(value: dict[object, object]) -> dict[str, ToolRecord]:
 
 
 def _dump_manifest(manifest: Manifest) -> dict[str, object]:
+    """Convert a manifest to a JSON-ready mapping."""
     return {
         "mcps": _dump_records(manifest.mcps),
         "skills": _dump_records(manifest.skills),
@@ -115,6 +118,7 @@ def _dump_manifest(manifest: Manifest) -> dict[str, object]:
 
 
 def _dump_records(records: dict[str, ToolRecord]) -> dict[str, object]:
+    """Convert records to JSON-ready mappings keyed by tool name."""
     return {
         name: {
             "files": list(record.files),
@@ -126,6 +130,7 @@ def _dump_records(records: dict[str, ToolRecord]) -> dict[str, object]:
 
 
 def _string_field(record: dict[object, object], key: str) -> str:
+    """Return a string field from a manifest record, or raise ManifestError."""
     value = record.get(key)
     if isinstance(value, str):
         return value
@@ -136,6 +141,7 @@ def _string_field(record: dict[object, object], key: str) -> str:
 
 
 def _string_tuple(record: dict[object, object], key: str) -> tuple[str, ...]:
+    """Return a list-of-strings field from a manifest record as a tuple."""
     value = record.get(key)
     if not isinstance(value, list):
         msg = (

@@ -65,6 +65,7 @@ def copy_skill_to_clients(repository: Path, name: str, source: Path) -> list[Pat
 
 
 def _read_json_object(path: Path) -> dict[str, object]:
+    """Read a JSON object from path, or return an empty mapping if unusable."""
     if not path.exists():
         return {}
     parsed = json.loads(path.read_text())

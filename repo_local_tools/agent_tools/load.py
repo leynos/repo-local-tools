@@ -39,6 +39,8 @@ class LoadResult:
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class _LoadCandidate:
+    """Pair a load result with the deferred write that produces it."""
+
     result: LoadResult
     write: cabc.Callable[[], LoadResult]
 
@@ -59,12 +61,14 @@ def load_path(
 
 
 def _resolve_source(source: Path, cwd: Path) -> Path:
+    """Resolve a relative source path against the working directory."""
     if source.is_absolute():
         return source
     return cwd / source
 
 
 def _load_file(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
+    """Load one file source, chosen by its name or suffix."""
     if source.name == "SKILL.md":
         candidate = _skill_directory_candidate(source.parent, xdg_data_home)
         return [candidate.write()]
@@ -77,6 +81,7 @@ def _load_file(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
 
 
 def _load_directory(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
+    """Load every supported tool source found in a directory."""
     loaders: list[cabc.Callable[[], list[_LoadCandidate]]] = []
     if (source / "SKILL.md").exists():
         loaders.append(lambda: [_skill_directory_candidate(source, xdg_data_home)])
@@ -116,6 +121,7 @@ def _load_directory(source: Path, xdg_data_home: Path | None) -> list[LoadResult
 
 
 def _reject_duplicate_results(results: typ.Iterable[LoadResult]) -> None:
+    """Raise LoadError if two results share the same kind and name."""
     seen: set[tuple[str, str]] = set()
     duplicates: set[tuple[str, str]] = set()
     for result in results:
@@ -136,6 +142,7 @@ def _skill_archive_candidate(
     archive_path: Path,
     xdg_data_home: Path | None,
 ) -> _LoadCandidate:
+    """Validate a `.skill` archive and return a deferred load candidate."""
     with tempfile.TemporaryDirectory() as temporary_directory:
         extracted = _extract_archive_for_load(
             archive_path.resolve(), Path(temporary_directory) / "skill"
@@ -148,6 +155,7 @@ def _skill_archive_candidate(
 
 
 def _load_skill_archive(archive_path: Path, xdg_data_home: Path | None) -> LoadResult:
+    """Extract a `.skill` archive and copy its skill into the registry."""
     with tempfile.TemporaryDirectory() as temporary_directory:
         extracted = _extract_archive_for_load(
             archive_path.resolve(), Path(temporary_directory) / "skill"
@@ -157,6 +165,7 @@ def _load_skill_archive(archive_path: Path, xdg_data_home: Path | None) -> LoadR
 
 
 def _extract_archive_for_load(archive_path: Path, extract_root: Path) -> Path:
+    """Extract a skill archive, translating archive failures to LoadError."""
     try:
         return extract_skill_archive(archive_path, extract_root)
     except ArchiveError as error:
@@ -168,6 +177,7 @@ def _skill_directory_candidate(
     source: Path,
     xdg_data_home: Path | None,
 ) -> _LoadCandidate:
+    """Validate a skill directory and return a deferred load candidate."""
     skill_file = source / "SKILL.md"
     if not skill_file.exists():
         msg = f"skill source must contain SKILL.md: {source}"
@@ -181,6 +191,7 @@ def _skill_directory_candidate(
 
 
 def _load_skill_directory(source: Path, xdg_data_home: Path | None) -> LoadResult:
+    """Copy a skill directory into the shared registry."""
     skill_file = source / "SKILL.md"
     if not skill_file.exists():
         msg = f"skill source must contain SKILL.md: {source}"
@@ -190,6 +201,7 @@ def _load_skill_directory(source: Path, xdg_data_home: Path | None) -> LoadResul
 
 
 def _skill_result(name: str, xdg_data_home: Path | None) -> LoadResult:
+    """Describe where the named skill is stored in the shared registry."""
     return LoadResult(
         kind="skill",
         name=name,
@@ -198,6 +210,7 @@ def _skill_result(name: str, xdg_data_home: Path | None) -> LoadResult:
 
 
 def _skill_name(skill_file: Path, fallback: str) -> str:
+    """Return a validated skill name from frontmatter, or the fallback."""
     name = _frontmatter_name(skill_file) or fallback
     if name in INVALID_FALLBACK_SKILL_NAMES or not SKILL_NAME_PATTERN.fullmatch(name):
         msg = f"invalid skill name: {name}"
@@ -206,6 +219,7 @@ def _skill_name(skill_file: Path, fallback: str) -> str:
 
 
 def _frontmatter_name(skill_file: Path) -> str | None:
+    """Return the name declared in a SKILL.md frontmatter block, if any."""
     lines = skill_file.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "---":
         return None
@@ -224,6 +238,7 @@ def _copy_skill_to_registry(
     source: Path,
     xdg_data_home: Path | None,
 ) -> LoadResult:
+    """Replace the registry copy of a skill with the source directory."""
     _reject_skill_symlinks(source)
     destination = data_root(xdg_data_home) / "skills" / name
     if destination.exists():
@@ -234,6 +249,7 @@ def _copy_skill_to_registry(
 
 
 def _reject_skill_symlinks(source: Path) -> None:
+    """Raise LoadError if the skill source is or contains a symlink."""
     if source.is_symlink():
         msg = f"skill source must not be a symlink: {source}"
         raise LoadError(msg)
@@ -244,6 +260,7 @@ def _reject_skill_symlinks(source: Path) -> None:
 
 
 def _load_mcp_json(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
+    """Load every MCP server definition from a JSON file."""
     return [
         candidate.write() for candidate in _mcp_json_candidates(source, xdg_data_home)
     ]
@@ -253,6 +270,7 @@ def _mcp_json_candidates(
     source: Path,
     xdg_data_home: Path | None,
 ) -> list[_LoadCandidate]:
+    """Parse an MCP JSON file into deferred load candidates, one per server."""
     try:
         parsed = json.loads(source.read_text(encoding="utf-8"))
     except json.JSONDecodeError as error:
@@ -281,6 +299,7 @@ def _mcp_json_candidates(
 
 
 def _mcp_result(name: str, xdg_data_home: Path | None) -> LoadResult:
+    """Describe where the named MCP definition is stored in the registry."""
     return LoadResult(
         kind="mcp",
         name=name,
@@ -289,6 +308,7 @@ def _mcp_result(name: str, xdg_data_home: Path | None) -> LoadResult:
 
 
 def _mcp_definition(source: Path, name: object, value: object) -> McpDefinition:
+    """Validate one MCP server entry and build its definition."""
     safe_name = _safe_mcp_name(source, name)
     if not isinstance(value, dict):
         msg = f"{source} MCP server {safe_name!r} must be an object"
@@ -307,6 +327,7 @@ def _mcp_definition(source: Path, name: object, value: object) -> McpDefinition:
 
 
 def _safe_mcp_name(source: Path, name: object) -> str:
+    """Return the MCP server name, rejecting empty or unsafe names."""
     if not isinstance(name, str) or not name:
         msg = f"{source} contains an MCP server with an invalid name"
         raise LoadError(msg)
@@ -329,6 +350,7 @@ def _required_string(
     source: Path,
     name: str,
 ) -> str:
+    """Return a non-empty string field, or raise LoadError."""
     value = parsed.get(key)
     if isinstance(value, str) and value:
         return value
@@ -342,6 +364,7 @@ def _optional_string_tuple(
     source: Path,
     name: str,
 ) -> tuple[str, ...]:
+    """Return an optional list of strings as a tuple, or raise LoadError."""
     value = parsed.get(key, [])
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
         msg = f"{source} MCP server {name!r} field {key!r} must be a list of strings"
@@ -355,6 +378,7 @@ def _optional_string_mapping(
     source: Path,
     name: str,
 ) -> dict[str, str]:
+    """Return an optional table of string values, or raise LoadError."""
     value = parsed.get(key, {})
     if not isinstance(value, dict):
         msg = f"{source} MCP server {name!r} field {key!r} must be an object"
@@ -375,6 +399,7 @@ def _write_mcp_definition(
     definition: McpDefinition,
     xdg_data_home: Path | None,
 ) -> LoadResult:
+    """Write an MCP definition as TOML into the shared registry."""
     name = definition.name
     destination = data_root(xdg_data_home) / "mcp-servers" / f"{name}.toml"
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -383,6 +408,7 @@ def _write_mcp_definition(
 
 
 def _mcp_definition_toml(definition: McpDefinition) -> str:
+    """Render an MCP definition as TOML text."""
     lines = [
         f"name = {_toml_string(definition.name)}",
         f"command = {_toml_string(definition.command)}",
@@ -400,4 +426,5 @@ def _mcp_definition_toml(definition: McpDefinition) -> str:
 
 
 def _toml_string(value: str) -> str:
+    """Render a string as a JSON-quoted TOML string."""
     return json.dumps(value)
