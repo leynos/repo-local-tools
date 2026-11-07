@@ -1,3 +1,5 @@
+"""Tests for managed entries written to the .gitignore file."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +8,7 @@ from repo_local_tools.agent_tools.gitignore import ensure_ignored
 
 
 def test_ensure_ignored_adds_missing_entries_once(tmp_path: Path) -> None:
+    """Add managed entries once, even when ensure_ignored runs twice."""
     gitignore = tmp_path / ".gitignore"
 
     ensure_ignored(tmp_path, [".mcp.json", ".codex/mcp.json"])
@@ -19,6 +22,7 @@ def test_ensure_ignored_adds_missing_entries_once(tmp_path: Path) -> None:
 
 
 def test_ensure_ignored_preserves_existing_content(tmp_path: Path) -> None:
+    """Keep existing .gitignore content and append only missing entries."""
     gitignore = tmp_path / ".gitignore"
     gitignore.write_text("dist/\n.coverage\n")
 

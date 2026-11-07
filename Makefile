@@ -25,7 +25,7 @@ CV005_CONTRACTS_REF ?= a38feb9be25755c30eca5bda96bd3786a5b89c6b
 CV005_CONTRACTS = $(UV_GATE) tool --python 3.13 --from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' -- cv005-contracts
 PYTHON_TARGETS ?= repo_local_tools tests
 
-.PHONY: prepare help all clean build build-release lint fmt check-fmt \
+.PHONY: prepare help all clean build build-release lint fmt check-fmt interrogate \
         markdownlint spelling nixie test test-workflow-contracts typecheck $(TOOLS) $(VENV_TOOLS)
 
 prepare: ## Install the locked development environment, offline first
@@ -83,7 +83,27 @@ check-fmt: ruff $(MDTABLEFIX) ## Verify formatting
 	ruff format --check
 	$(MDTABLEFIX) --check $(MDTABLEFIX_SELECT) $(MDTABLEFIX_RULES)
 
-lint: ruff ## Run linters
+# Interrogate measures docstring presence over the Python files it scans under
+# INTERROGATE_TARGETS (it skips some path prefixes by default, so check a new
+# file against the verbose report). Add a new Python directory to the targets.
+INTERROGATE_VERSION ?= 1.7.0
+INTERROGATE_TARGETS ?= conftest.py repo_local_tools scripts tests
+# Level 2 prints a MISSED row per undocumented definition, which the
+# `interrogate` target fails on: the rounded percentage alone passes a lone gap.
+INTERROGATE_FLAGS ?= -vv --no-color --ext pyi --fail-under 100
+INTERROGATE = $(UV_GATE) tool --from interrogate==$(INTERROGATE_VERSION) -- interrogate
+
+interrogate: ## Enforce complete Python docstring coverage
+	@report="$$($(INTERROGATE) $(INTERROGATE_FLAGS) $(INTERROGATE_TARGETS))"; \
+	  status=$$?; \
+	  printf '%s\n' "$$report"; \
+	  test "$$status" -eq 0 || exit "$$status"; \
+	  if printf '%s\n' "$$report" | grep -q '| *MISSED *|'; then \
+	    printf '%s\n' 'interrogate: undocumented definitions remain; see the MISSED rows above' >&2; \
+	    exit 1; \
+	  fi
+
+lint: interrogate ruff ## Run linters
 	ruff check
 
 typecheck: build ty ## Run typechecking

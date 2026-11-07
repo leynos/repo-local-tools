@@ -24,6 +24,7 @@ from repo_local_tools.agent_tools.manifest import load_manifest
 
 
 def test_install_mcp_writes_supported_client_configs(tmp_path: Path) -> None:
+    """Write the MCP server to each supported client config and the manifest."""
     repository = tmp_path / "repo"
     xdg_data_home = tmp_path / "xdg"
     repository.mkdir()
@@ -51,6 +52,7 @@ def test_install_mcp_writes_supported_client_configs(tmp_path: Path) -> None:
 
 
 def test_install_skill_copies_skill_to_supported_clients(tmp_path: Path) -> None:
+    """Copy an installed skill to each client and record it in the manifest."""
     repository = tmp_path / "repo"
     xdg_data_home = tmp_path / "xdg"
     repository.mkdir()
@@ -76,6 +78,7 @@ def test_install_skill_copies_skill_to_supported_clients(tmp_path: Path) -> None
 
 
 def test_install_skill_rejects_relative_archive_path(tmp_path: Path) -> None:
+    """Reject a relative archive path passed to install_skill."""
     repository = tmp_path / "repo"
     repository.mkdir()
 
@@ -86,6 +89,7 @@ def test_install_skill_rejects_relative_archive_path(tmp_path: Path) -> None:
 def test_install_skill_from_archive_path_updates_manifest_and_clients(
     tmp_path: Path,
 ) -> None:
+    """Install a skill from an archive path into clients and the manifest."""
     repository = tmp_path / "repo"
     archive_path = tmp_path / "archives" / "reviewer.skill"
     repository.mkdir()
@@ -117,6 +121,7 @@ def test_install_skill_from_archive_path_updates_manifest_and_clients(
 
 
 def test_update_skill_archive_preserves_managed_name(tmp_path: Path) -> None:
+    """Update an archive skill without renaming it to its upstream directory."""
     repository = tmp_path / "repo"
     archive_path = tmp_path / "archives" / "reviewer.skill"
     repository.mkdir()
@@ -155,6 +160,7 @@ def test_update_skill_archive_preserves_managed_name(tmp_path: Path) -> None:
 
 
 def test_install_skill_unknown_name_raises_install_error(tmp_path: Path) -> None:
+    """Raise InstallError when the skill name has no known source."""
     repository = tmp_path / "repo"
     repository.mkdir()
 
@@ -163,6 +169,7 @@ def test_install_skill_unknown_name_raises_install_error(tmp_path: Path) -> None
 
 
 def test_update_mcps_requires_named_tool_to_be_installed(tmp_path: Path) -> None:
+    """Raise InstallError when updating an MCP server that is not installed."""
     repository = tmp_path / "repo"
     xdg_data_home = tmp_path / "xdg"
     repository.mkdir()
@@ -173,6 +180,7 @@ def test_update_mcps_requires_named_tool_to_be_installed(tmp_path: Path) -> None
 
 
 def test_update_mcps_and_skills_return_install_results(tmp_path: Path) -> None:
+    """Return update results naming the installed MCP server and skill."""
     repository = tmp_path / "repo"
     xdg_data_home = tmp_path / "xdg"
     repository.mkdir()

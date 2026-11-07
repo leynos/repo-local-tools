@@ -20,6 +20,7 @@ from repo_local_tools.agent_tools.manifest import (
 
 @pytest.fixture
 def manifest_path(tmp_path: Path) -> Path:
+    """Return the manifest path, creating its parent directory under tmp_path."""
     path = tmp_path / MANIFEST_PATH
     path.parent.mkdir(parents=True)
     return path
@@ -29,6 +30,7 @@ def test_load_manifest_rejects_partially_invalid_string_lists(
     tmp_path: Path,
     manifest_path: Path,
 ) -> None:
+    """Reject a manifest whose file list contains a non-string entry."""
     manifest_path.write_text(
         json.dumps(
             {
@@ -52,6 +54,7 @@ def test_load_manifest_rejects_malformed_json(
     tmp_path: Path,
     manifest_path: Path,
 ) -> None:
+    """Reject a manifest that is not valid JSON, naming the manifest path."""
     manifest_path.write_text("{")
 
     expected_message = re.escape(f"Invalid manifest JSON in {manifest_path}")
@@ -76,6 +79,7 @@ def test_load_manifest_rejects_invalid_shapes(
     content: str,
     expected_error: str,
 ) -> None:
+    """Reject manifests with a non-object top level, section, or record."""
     manifest_path.write_text(content)
 
     with pytest.raises(ManifestError, match=expected_error):
@@ -83,6 +87,7 @@ def test_load_manifest_rejects_invalid_shapes(
 
 
 def test_save_manifest_replaces_manifest_without_tmp_file(tmp_path: Path) -> None:
+    """Save a manifest and leave no temporary file behind."""
     manifest = Manifest(
         mcps={
             "echo": ToolRecord(
