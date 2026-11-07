@@ -164,7 +164,7 @@ def repository_has_mcp_config(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('"{path}" ignores generated MCP configuration'))
 def gitignore_ignores_mcp(context: ScenarioContext, path: str) -> None:
-    """Assert that the named ignore file lists every generated MCP config path."""
+    """Assert the ignore file's contents include each generated MCP config path."""
     gitignore_path = context.repository / path
     content = gitignore_path.read_text()
     for pattern in (relative_path.as_posix() for relative_path in MCP_CONFIG_PATHS):
@@ -187,7 +187,7 @@ def repository_has_skill(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('"{path}" ignores generated skill directories'))
 def gitignore_ignores_skills(context: ScenarioContext, path: str) -> None:
-    """Assert that the named ignore file lists every generated skill root."""
+    """Assert the ignore file's contents include each generated skill root."""
     gitignore_path = context.repository / path
     content = gitignore_path.read_text()
     for pattern in (f"{root.as_posix()}/" for root in SKILL_ROOTS):
@@ -198,7 +198,7 @@ def gitignore_ignores_skills(context: ScenarioContext, path: str) -> None:
 
 @then(parsers.parse('the repository has updated MCP configuration for "{name}"'))
 def repository_has_updated_mcp(context: ScenarioContext, name: str) -> None:
-    """Assert that every client config runs the named server with python3."""
+    """Assert each client config sets the named server's command to python3."""
     for relative_path in MCP_CONFIG_PATHS:
         config_path = context.repository / relative_path
         config = json.loads(config_path.read_text())
@@ -237,7 +237,7 @@ def shared_registry_has_skill(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('the shared registry has MCP server "{name}"'))
 def shared_registry_has_mcp_server(context: ScenarioContext, name: str) -> None:
-    """Assert that the shared MCP definition has the expected name and command."""
+    """Assert the shared MCP definition file holds the expected name and command."""
     definition_path = (
         context.xdg_data_home / "repo-local-tools" / "mcp-servers" / f"{name}.toml"
     )

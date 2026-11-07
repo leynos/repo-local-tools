@@ -31,7 +31,7 @@ def test_data_root_uses_env_when_xdg_data_home_is_none(
 def test_data_root_falls_back_to_home_when_no_xdg(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Fall back to ~/.local/share when XDG_DATA_HOME is unset."""
+    """Fall back to ~/.local/share/repo-local-tools when XDG_DATA_HOME is unset."""
     monkeypatch.delenv("XDG_DATA_HOME", raising=False)
 
     assert data_root(None) == Path.home() / ".local" / "share" / "repo-local-tools"

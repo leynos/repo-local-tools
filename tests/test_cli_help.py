@@ -19,7 +19,7 @@ def test_top_level_help_explains_registry_and_command_groups() -> None:
 
 
 def test_load_help_explains_supported_sources() -> None:
-    """Assert that load help lists the supported source formats and location."""
+    """Assert load help mentions SKILL.md, .skill, mcp.json and the current dir."""
     result = run_help("load", "--help")
 
     assert result.returncode == 0
@@ -30,7 +30,7 @@ def test_load_help_explains_supported_sources() -> None:
 
 
 def test_mcp_help_explains_supported_clients_and_registry_path() -> None:
-    """Assert that mcp help names the supported clients and the registry path."""
+    """Assert mcp help mentions the protocol, mcp-servers, Claude and Cursor."""
     result = run_help("mcp", "--help")
 
     assert result.returncode == 0
