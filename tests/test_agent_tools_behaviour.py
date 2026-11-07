@@ -26,6 +26,8 @@ COMMAND_TIMEOUT_SECONDS = 30
 
 @dataclasses.dataclass(slots=True)
 class ScenarioContext:
+    """Hold the repository, XDG data home, and last command result for a scenario."""
+
     repository: Path
     xdg_data_home: Path
     last_result: subprocess.CompletedProcess[str] | None
@@ -33,6 +35,7 @@ class ScenarioContext:
 
 @pytest.fixture
 def context(tmp_path: Path) -> ScenarioContext:
+    """Build a fresh scenario context under the pytest temporary directory."""
     return ScenarioContext(
         repository=tmp_path / "repository",
         xdg_data_home=tmp_path / "xdg",
@@ -42,6 +45,7 @@ def context(tmp_path: Path) -> ScenarioContext:
 
 @given("a git repository workspace")
 def git_repository_workspace(context: ScenarioContext) -> None:
+    """Create an empty git repository with a test identity configured."""
     context.repository.mkdir()
     subprocess.run(
         ["git", "init"],
@@ -68,21 +72,25 @@ def git_repository_workspace(context: ScenarioContext) -> None:
 
 @given(parsers.parse('an MCP registry definition named "{name}"'))
 def mcp_registry_definition(context: ScenarioContext, name: str) -> None:
+    """Write an MCP registry definition that uses the python command."""
     write_mcp_definition(context, name, command="python")
 
 
 @given(parsers.parse('a skill registry directory named "{name}"'))
 def skill_registry_directory(context: ScenarioContext, name: str) -> None:
+    """Write an initial skill into the shared registry directory."""
     write_skill(context.xdg_data_home / "repo-local-tools" / "skills" / name, "initial")
 
 
 @given(parsers.parse('a local skill source named "{name}"'))
 def local_skill_source(context: ScenarioContext, name: str) -> None:
+    """Write a local skill source under the repository skills directory."""
     write_skill(context.repository / "skills" / name, "local")
 
 
 @given(parsers.parse('a local MCP JSON configuration for "{name}"'))
 def local_mcp_json_configuration(context: ScenarioContext, name: str) -> None:
+    """Write a repository mcp.json file that declares the named server."""
     (context.repository / "mcp.json").write_text(
         json.dumps(
             {
@@ -96,33 +104,39 @@ def local_mcp_json_configuration(context: ScenarioContext, name: str) -> None:
 
 @given(parsers.parse('an installed MCP server named "{name}"'))
 def installed_mcp_server(context: ScenarioContext, name: str) -> None:
+    """Write an MCP registry definition and install it with the CLI."""
     mcp_registry_definition(context, name)
     run_tool(context, f"repo-local-tools mcp install {name}")
 
 
 @given(parsers.parse('an installed skill named "{name}"'))
 def installed_skill(context: ScenarioContext, name: str) -> None:
+    """Write a registry skill and install it with the CLI."""
     skill_registry_directory(context, name)
     run_tool(context, f"repo-local-tools skill install {name}")
 
 
 @when(parsers.parse('I run "{command}"'))
 def run_named_command(context: ScenarioContext, command: str) -> None:
+    """Run the command text given in the scenario step."""
     run_tool(context, command)
 
 
 @when(parsers.parse('I change the MCP registry definition named "{name}"'))
 def change_mcp_registry_definition(context: ScenarioContext, name: str) -> None:
+    """Rewrite the named MCP registry definition to use the python3 command."""
     write_mcp_definition(context, name, command="python3")
 
 
 @when(parsers.parse('I change the skill registry directory named "{name}"'))
 def change_skill_registry_directory(context: ScenarioContext, name: str) -> None:
+    """Rewrite the named registry skill with the updated body."""
     write_skill(context.xdg_data_home / "repo-local-tools" / "skills" / name, "updated")
 
 
 @then("the command succeeds")
 def command_succeeds(context: ScenarioContext) -> None:
+    """Assert that the last command exited with return code zero."""
     assert context.last_result is not None, "no command result was captured"
     assert context.last_result.returncode == 0, (
         f"expected command to succeed with return code 0, found "
@@ -137,6 +151,7 @@ def command_succeeds(context: ScenarioContext) -> None:
     )
 )
 def repository_has_mcp_config(context: ScenarioContext, name: str) -> None:
+    """Assert that every client config defines the named server with python."""
     for relative_path in MCP_CONFIG_PATHS:
         config_path = context.repository / relative_path
         config = json.loads(config_path.read_text())
@@ -149,6 +164,7 @@ def repository_has_mcp_config(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('"{path}" ignores generated MCP configuration'))
 def gitignore_ignores_mcp(context: ScenarioContext, path: str) -> None:
+    """Assert that the named ignore file lists every generated MCP config path."""
     gitignore_path = context.repository / path
     content = gitignore_path.read_text()
     for pattern in (relative_path.as_posix() for relative_path in MCP_CONFIG_PATHS):
@@ -159,6 +175,7 @@ def gitignore_ignores_mcp(context: ScenarioContext, path: str) -> None:
 
 @then(parsers.parse('the repository has skill "{name}" in every supported client'))
 def repository_has_skill(context: ScenarioContext, name: str) -> None:
+    """Assert that every skill root holds the named skill with initial content."""
     for root in SKILL_ROOTS:
         skill_path = context.repository / root / name / "SKILL.md"
         content = skill_path.read_text()
@@ -170,6 +187,7 @@ def repository_has_skill(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('"{path}" ignores generated skill directories'))
 def gitignore_ignores_skills(context: ScenarioContext, path: str) -> None:
+    """Assert that the named ignore file lists every generated skill root."""
     gitignore_path = context.repository / path
     content = gitignore_path.read_text()
     for pattern in (f"{root.as_posix()}/" for root in SKILL_ROOTS):
@@ -180,6 +198,7 @@ def gitignore_ignores_skills(context: ScenarioContext, path: str) -> None:
 
 @then(parsers.parse('the repository has updated MCP configuration for "{name}"'))
 def repository_has_updated_mcp(context: ScenarioContext, name: str) -> None:
+    """Assert that every client config runs the named server with python3."""
     for relative_path in MCP_CONFIG_PATHS:
         config_path = context.repository / relative_path
         config = json.loads(config_path.read_text())
@@ -193,6 +212,7 @@ def repository_has_updated_mcp(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('the repository has updated skill "{name}"'))
 def repository_has_updated_skill(context: ScenarioContext, name: str) -> None:
+    """Assert that every skill root holds the named skill with updated content."""
     for root in SKILL_ROOTS:
         skill_path = context.repository / root / name / "SKILL.md"
         content = skill_path.read_text()
@@ -204,6 +224,7 @@ def repository_has_updated_skill(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('the shared registry has skill "{name}"'))
 def shared_registry_has_skill(context: ScenarioContext, name: str) -> None:
+    """Assert that the shared registry holds the named skill with local content."""
     skill_path = (
         context.xdg_data_home / "repo-local-tools" / "skills" / name / "SKILL.md"
     )
@@ -216,6 +237,7 @@ def shared_registry_has_skill(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('the shared registry has MCP server "{name}"'))
 def shared_registry_has_mcp_server(context: ScenarioContext, name: str) -> None:
+    """Assert that the shared MCP definition has the expected name and command."""
     definition_path = (
         context.xdg_data_home / "repo-local-tools" / "mcp-servers" / f"{name}.toml"
     )
@@ -230,6 +252,7 @@ def shared_registry_has_mcp_server(context: ScenarioContext, name: str) -> None:
 
 @then(parsers.parse('git contains a commit with subject "{subject}"'))
 def git_contains_commit(context: ScenarioContext, subject: str) -> None:
+    """Assert that the latest commit in the scenario repository has the subject."""
     result = subprocess.run(
         ["git", "log", "-1", "--pretty=%s"],
         cwd=context.repository,
@@ -246,6 +269,7 @@ def git_contains_commit(context: ScenarioContext, subject: str) -> None:
 
 
 def run_tool(context: ScenarioContext, command: str) -> None:
+    """Run a command in the scenario repository and store its result."""
     stripped_command = command.strip()
     if not stripped_command:
         msg = "command must not be empty"
@@ -272,6 +296,7 @@ def run_tool(context: ScenarioContext, command: str) -> None:
 
 
 def write_mcp_definition(context: ScenarioContext, name: str, command: str) -> None:
+    """Write an MCP registry definition TOML file with the given command."""
     registry = context.xdg_data_home / "repo-local-tools" / "mcp-servers"
     registry.mkdir(parents=True, exist_ok=True)
     (registry / f"{name}.toml").write_text(
@@ -280,5 +305,6 @@ def write_mcp_definition(context: ScenarioContext, name: str, command: str) -> N
 
 
 def write_skill(skill_directory: Path, body: str) -> None:
+    """Write a SKILL.md file in the given directory containing the body line."""
     skill_directory.mkdir(parents=True, exist_ok=True)
     (skill_directory / "SKILL.md").write_text(f"{body}\n")

@@ -1,3 +1,5 @@
+"""Tests for skill archive validation and extraction."""
+
 from __future__ import annotations
 
 import zipfile
@@ -9,11 +11,13 @@ from repo_local_tools.agent_tools.archives import ArchiveError, extract_skill_ar
 
 
 def test_extract_skill_archive_requires_absolute_path(tmp_path: Path) -> None:
+    """Reject a relative archive path with an absolute-path error."""
     with pytest.raises(ArchiveError, match="absolute"):
         extract_skill_archive(Path("relative.skill"), tmp_path / "extract")
 
 
 def test_extract_skill_archive_nonexistent_path(tmp_path: Path) -> None:
+    """Reject an archive path that does not exist on disk."""
     archive = tmp_path / "nonexistent.skill"
 
     with pytest.raises(ArchiveError, match="skill archive does not exist"):
@@ -21,6 +25,7 @@ def test_extract_skill_archive_nonexistent_path(tmp_path: Path) -> None:
 
 
 def test_extract_skill_archive_corrupt_archive(tmp_path: Path) -> None:
+    """Reject a file that is not a valid zip archive."""
     archive = tmp_path / "corrupt.skill"
     archive.write_text("this is not a zip file")
 
@@ -29,6 +34,7 @@ def test_extract_skill_archive_corrupt_archive(tmp_path: Path) -> None:
 
 
 def test_extract_skill_archive_multiple_top_level_dirs(tmp_path: Path) -> None:
+    """Reject an archive whose entries span more than one top-level directory."""
     archive = tmp_path / "multi_root.skill"
     with zipfile.ZipFile(archive, "w") as skill_archive:
         skill_archive.writestr("a/SKILL.md", "content a")
@@ -41,6 +47,7 @@ def test_extract_skill_archive_multiple_top_level_dirs(tmp_path: Path) -> None:
 
 
 def test_extract_skill_archive_rejects_escaping_entries(tmp_path: Path) -> None:
+    """Reject archive entries that resolve outside the extraction directory."""
     archive = tmp_path / "unsafe.skill"
     with zipfile.ZipFile(archive, "w") as skill_archive:
         skill_archive.writestr("../escape/SKILL.md", "bad")
@@ -52,6 +59,7 @@ def test_extract_skill_archive_rejects_escaping_entries(tmp_path: Path) -> None:
 def test_extract_skill_archive_returns_single_top_level_directory(
     tmp_path: Path,
 ) -> None:
+    """Extract a single-root archive and return its root directory path."""
     archive = tmp_path / "reviewer.skill"
     with zipfile.ZipFile(archive, "w") as skill_archive:
         skill_archive.writestr("reviewer/SKILL.md", "Use evidence.\n")
