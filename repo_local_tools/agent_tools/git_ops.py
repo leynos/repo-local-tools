@@ -66,7 +66,10 @@ def _record_for(records: dict[str, ToolRecord], kind: str, name: str) -> ToolRec
 
 
 def _unrelated_changes(repository: Path, allowed_paths: set[str]) -> list[str]:
-    """List changed repository paths that fall outside the allowed set."""
+    """List status path fragments outside the allowed set.
+
+    Fragments may remain quoted or be split incorrectly.
+    """
     result = _run_git(repository, "status", "--porcelain=v1", "--untracked-files=all")
     unrelated: list[str] = []
     for line in result.stdout.splitlines():
@@ -77,7 +80,10 @@ def _unrelated_changes(repository: Path, allowed_paths: set[str]) -> list[str]:
 
 
 def _status_path(line: str) -> str:
-    """Extract the current path from a porcelain status line."""
+    """Extract the status-line path fragment, splitting on " -> ".
+
+    Git quoting is not decoded.
+    """
     path = line[3:]
     if " -> " in path:
         return path.split(" -> ", maxsplit=1)[1]
@@ -140,7 +146,10 @@ def _tool_noun(kind: str) -> str:
 
 
 def _run_git(repository: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    """Run a Git command in repository, raising GitError when it fails."""
+    """Run Git in repository; raise GitError on a non-zero exit status.
+
+    Other exceptions propagate.
+    """
     result = subprocess.run(  # ruff: ignore[subprocess-without-shell-equals-true] - Git argv built by callers, no shell.
         [GIT_EXECUTABLE, *args],
         cwd=repository,

@@ -81,7 +81,11 @@ def _load_file(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
 
 
 def _load_directory(source: Path, xdg_data_home: Path | None) -> list[LoadResult]:
-    """Load every supported tool source found in a directory."""
+    """Load recognised sources in a directory.
+
+    Skill directories are taken from the immediate subdirectories of ``skill/``
+    and ``skills/``.
+    """
     loaders: list[cabc.Callable[[], list[_LoadCandidate]]] = []
     if (source / "SKILL.md").exists():
         loaders.append(lambda: [_skill_directory_candidate(source, xdg_data_home)])
@@ -165,7 +169,10 @@ def _load_skill_archive(archive_path: Path, xdg_data_home: Path | None) -> LoadR
 
 
 def _extract_archive_for_load(archive_path: Path, extract_root: Path) -> Path:
-    """Extract a skill archive, translating archive failures to LoadError."""
+    """Extract a skill archive, translating ArchiveError to LoadError.
+
+    Other exceptions propagate.
+    """
     try:
         return extract_skill_archive(archive_path, extract_root)
     except ArchiveError as error:
@@ -219,7 +226,11 @@ def _skill_name(skill_file: Path, fallback: str) -> str:
 
 
 def _frontmatter_name(skill_file: Path) -> str | None:
-    """Return the name declared in a SKILL.md frontmatter block, if any."""
+    """Return the first ``name:`` value after an opening ``---``.
+
+    The search ends at a closing ``---`` or the end of the file, and the
+    frontmatter is not parsed as YAML.
+    """
     lines = skill_file.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0].strip() != "---":
         return None
@@ -399,7 +410,10 @@ def _write_mcp_definition(
     definition: McpDefinition,
     xdg_data_home: Path | None,
 ) -> LoadResult:
-    """Write an MCP definition as TOML into the shared registry."""
+    """Write an MCP definition using JSON-quoted strings into the registry.
+
+    The output can be invalid TOML for non-BMP characters.
+    """
     name = definition.name
     destination = data_root(xdg_data_home) / "mcp-servers" / f"{name}.toml"
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -408,7 +422,10 @@ def _write_mcp_definition(
 
 
 def _mcp_definition_toml(definition: McpDefinition) -> str:
-    """Render an MCP definition as TOML text."""
+    """Render an MCP definition using JSON-quoted strings.
+
+    The output can be invalid TOML for non-BMP characters.
+    """
     lines = [
         f"name = {_toml_string(definition.name)}",
         f"command = {_toml_string(definition.command)}",
@@ -426,5 +443,5 @@ def _mcp_definition_toml(definition: McpDefinition) -> str:
 
 
 def _toml_string(value: str) -> str:
-    """Render a string as a JSON-quoted TOML string."""
+    """JSON-quote a string; the result can be invalid TOML for non-BMP characters."""
     return json.dumps(value)
