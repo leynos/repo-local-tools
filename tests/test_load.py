@@ -234,7 +234,7 @@ def test_load_skill_md_uses_frontmatter_name(tmp_path: Path) -> None:
 
 
 def test_load_skill_md_rejects_ambiguous_directory_names(tmp_path: Path) -> None:
-    """Reject a SKILL.md without frontmatter, raising an invalid skill name error."""
+    """Reject a frontmatter-less SKILL.md whose directory name is ``skill``."""
     source = tmp_path / "skill"
     source.mkdir()
     (source / "SKILL.md").write_text("No frontmatter.\n")
@@ -244,7 +244,7 @@ def test_load_skill_md_rejects_ambiguous_directory_names(tmp_path: Path) -> None
 
 
 def test_load_mcp_json_rejects_non_string_environment(tmp_path: Path) -> None:
-    """Reject an MCP server whose env value is not a string."""
+    """Reject an MCP server whose env mapping holds a non-string value."""
     source = tmp_path / "mcp.json"
     source.write_text(
         json.dumps(
