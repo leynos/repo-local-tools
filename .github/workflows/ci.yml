@@ -41,7 +41,7 @@ jobs:
       - name: Install mdtablefix
         # `make check-fmt` runs `mdtablefix --check --git --include-untracked`;
         # this pins the version the estate formats with.
-        uses: leynos/shared-actions/.github/actions/install-mdtablefix@7f453d1cb78953489bd9da9409bf385c44b224a3
+        uses: leynos/shared-actions/.github/actions/install-mdtablefix@fc0e10220207b951bf693aba2ce4f9dafc1a0206
         with:
           version: "0.6.1"
 
@@ -74,7 +74,7 @@ jobs:
       # earlier Slipcover step measured.
       - name: Generate coverage
         if: github.event_name == 'pull_request'
-        uses: leynos/shared-actions/.github/actions/generate-coverage@7f453d1cb78953489bd9da9409bf385c44b224a3
+        uses: leynos/shared-actions/.github/actions/generate-coverage@fc0e10220207b951bf693aba2ce4f9dafc1a0206
         with:
           language: python
           output-path: coverage.xml
