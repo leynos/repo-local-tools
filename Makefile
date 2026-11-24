@@ -114,8 +114,10 @@ markdownlint: $(MDLINT) ## Lint Markdown files
 	$(MDLINT) '**/*.md'
 	+$(MAKE) spelling
 
+# The one uv call outside the helper: the spelling baseline requires the
+# builder at a release tag, which the helper's SHA-only pin check refuses.
 TYPOS_CONFIG_BUILDER_VERSION ?= v0.1.4
-TYPOS_CONFIG_BUILDER = $(UV) tool run --python 3.14 --from \
+TYPOS_CONFIG_BUILDER = uv tool run --python 3.14 --from \
 	"git+https://github.com/leynos/typos-config-builder.git@$(TYPOS_CONFIG_BUILDER_VERSION)" \
 	typos-config-builder
 
