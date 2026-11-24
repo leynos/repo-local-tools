@@ -1,4 +1,4 @@
-# Every uv call goes through the vendored helper, which cleans the environment,
+# Every uv call except the spelling builder's goes through the vendored helper, which cleans the environment,
 # uses the global uv cache, runs offline first and goes online at most once. See
 # https://github.com/leynos/shared-actions/tree/main/uv_gate for the contract.
 UV_GATE ?= python3 scripts/uv_gate.py
